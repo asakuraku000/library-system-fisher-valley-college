@@ -24,7 +24,7 @@ Public Class frmMemberBrowseBooks
     Private ReadOnly txtSearch As New TextBox()
     Private ReadOnly cboCategory As New ComboBox()
     Private ReadOnly chkAvailableOnly As New CheckBox()
-    Private ReadOnly btnRefresh As New Button()
+    Private ReadOnly btnRefresh As New RoundedButton()
     Private ReadOnly grid As New DataGridView()
     Private ReadOnly lblCount As New Label()
     Private ReadOnly debounce As New System.Windows.Forms.Timer()
@@ -68,6 +68,7 @@ Public Class frmMemberBrowseBooks
 
         btnRefresh.Size = New Size(90, 30)
         btnRefresh.Text = "Refresh"
+        btnRefresh.Kind = ButtonKind.Outline
         btnRefresh.Font = New Font("Segoe UI", 9.0F)
         btnRefresh.FlatStyle = FlatStyle.Flat
         btnRefresh.FlatAppearance.BorderSize = 0

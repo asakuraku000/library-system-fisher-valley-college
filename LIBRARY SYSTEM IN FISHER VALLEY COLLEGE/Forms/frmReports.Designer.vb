@@ -39,9 +39,9 @@ Partial Class frmReports
         lblDateTo = New Label()
         dtpTo = New DateTimePicker()
         chkUseDateFilter = New CheckBox()
-        btnGenerate = New Button()
-        btnExportCsv = New Button()
-        btnPrint = New Button()
+        btnGenerate = New RoundedButton()
+        btnExportCsv = New RoundedButton()
+        btnPrint = New RoundedButton()
 
         lblReportSummary = New Label()
         dgvReport = New DataGridView()
@@ -163,6 +163,7 @@ Partial Class frmReports
         btnGenerate.ForeColor = Color.White
         btnGenerate.Location = New Point(900, 78)
         btnGenerate.Name = "btnGenerate"
+        btnGenerate.Kind = ButtonKind.Primary
         btnGenerate.Size = New Size(90, 28)
         btnGenerate.TabIndex = 8
         btnGenerate.Text = "Generate"
@@ -175,6 +176,7 @@ Partial Class frmReports
         btnExportCsv.Font = New Font("Segoe UI", 9F)
         btnExportCsv.Location = New Point(998, 78)
         btnExportCsv.Name = "btnExportCsv"
+        btnExportCsv.Kind = ButtonKind.Outline
         btnExportCsv.Size = New Size(90, 28)
         btnExportCsv.TabIndex = 9
         btnExportCsv.Text = "Export CSV"
@@ -187,6 +189,7 @@ Partial Class frmReports
         btnPrint.Font = New Font("Segoe UI", 9F)
         btnPrint.Location = New Point(1070, 78)
         btnPrint.Name = "btnPrint"
+        btnPrint.Kind = ButtonKind.Outline
         btnPrint.Size = New Size(90, 28)
         btnPrint.TabIndex = 10
         btnPrint.Text = "Print"
@@ -262,9 +265,9 @@ Partial Class frmReports
     Friend WithEvents lblDateTo As Label
     Friend WithEvents dtpTo As DateTimePicker
     Friend WithEvents chkUseDateFilter As CheckBox
-    Friend WithEvents btnGenerate As Button
-    Friend WithEvents btnExportCsv As Button
-    Friend WithEvents btnPrint As Button
+    Friend WithEvents btnGenerate As RoundedButton
+    Friend WithEvents btnExportCsv As RoundedButton
+    Friend WithEvents btnPrint As RoundedButton
 
     Friend WithEvents lblReportSummary As Label
     Friend WithEvents dgvReport As DataGridView

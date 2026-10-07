@@ -35,11 +35,11 @@ Partial Class frmBorrower
         lblSubtitle = New Label()
         lblTitle = New Label()
         grpDetails = New GroupBox()
-        btnViewHistory = New Button()
-        btnClear = New Button()
-        btnDelete = New Button()
-        btnUpdate = New Button()
-        btnAdd = New Button()
+        btnViewHistory = New RoundedButton()
+        btnClear = New RoundedButton()
+        btnDelete = New RoundedButton()
+        btnUpdate = New RoundedButton()
+        btnAdd = New RoundedButton()
         lblDateRegisteredValue = New Label()
         lblDateRegisteredCaption = New Label()
         cmbMembershipStatus = New ComboBox()
@@ -60,8 +60,8 @@ Partial Class frmBorrower
         lblIdNumber = New Label()
         lblSearch = New Label()
         txtSearch = New TextBox()
-        btnSearchBorrowers = New Button()
-        btnRefreshBorrowers = New Button()
+        btnSearchBorrowers = New RoundedButton()
+        btnRefreshBorrowers = New RoundedButton()
         dgvBorrowers = New DataGridView()
         lblBorrowersSummary = New Label()
         pnlHeader.SuspendLayout()
@@ -296,6 +296,7 @@ Partial Class frmBorrower
         btnAdd.ForeColor = Color.White
         btnAdd.Location = New Point(15, 336)
         btnAdd.Name = "btnAdd"
+        btnAdd.Kind = ButtonKind.Primary
         btnAdd.Size = New Size(120, 32)
         btnAdd.TabIndex = 18
         btnAdd.Text = "Add Borrower"
@@ -309,6 +310,7 @@ Partial Class frmBorrower
         btnUpdate.ForeColor = Color.White
         btnUpdate.Location = New Point(145, 336)
         btnUpdate.Name = "btnUpdate"
+        btnUpdate.Kind = ButtonKind.Custom
         btnUpdate.Size = New Size(120, 32)
         btnUpdate.TabIndex = 19
         btnUpdate.Text = "Update"
@@ -322,6 +324,7 @@ Partial Class frmBorrower
         btnDelete.ForeColor = Color.White
         btnDelete.Location = New Point(15, 376)
         btnDelete.Name = "btnDelete"
+        btnDelete.Kind = ButtonKind.Custom
         btnDelete.Size = New Size(120, 32)
         btnDelete.TabIndex = 20
         btnDelete.Text = "Delete"
@@ -332,6 +335,7 @@ Partial Class frmBorrower
         btnClear.FlatStyle = FlatStyle.Flat
         btnClear.Location = New Point(145, 376)
         btnClear.Name = "btnClear"
+        btnClear.Kind = ButtonKind.Neutral
         btnClear.Size = New Size(120, 32)
         btnClear.TabIndex = 21
         btnClear.Text = "Clear Form"
@@ -345,6 +349,7 @@ Partial Class frmBorrower
         btnViewHistory.ForeColor = Color.White
         btnViewHistory.Location = New Point(15, 416)
         btnViewHistory.Name = "btnViewHistory"
+        btnViewHistory.Kind = ButtonKind.Custom
         btnViewHistory.Size = New Size(250, 32)
         btnViewHistory.TabIndex = 22
         btnViewHistory.Text = "View Borrowing History"
@@ -377,6 +382,7 @@ Partial Class frmBorrower
         btnSearchBorrowers.ForeColor = Color.White
         btnSearchBorrowers.Location = New Point(688, 76)
         btnSearchBorrowers.Name = "btnSearchBorrowers"
+        btnSearchBorrowers.Kind = ButtonKind.Primary
         btnSearchBorrowers.Size = New Size(80, 26)
         btnSearchBorrowers.TabIndex = 4
         btnSearchBorrowers.Text = "Search"
@@ -390,6 +396,7 @@ Partial Class frmBorrower
         btnRefreshBorrowers.ForeColor = Color.FromArgb(CByte(17), CByte(78), CByte(128))
         btnRefreshBorrowers.Location = New Point(778, 76)
         btnRefreshBorrowers.Name = "btnRefreshBorrowers"
+        btnRefreshBorrowers.Kind = ButtonKind.Outline
         btnRefreshBorrowers.Size = New Size(80, 26)
         btnRefreshBorrowers.TabIndex = 5
         btnRefreshBorrowers.Text = "Refresh"
@@ -486,15 +493,15 @@ Partial Class frmBorrower
     Friend WithEvents cmbMembershipStatus As ComboBox
     Friend WithEvents lblDateRegisteredCaption As Label
     Friend WithEvents lblDateRegisteredValue As Label
-    Friend WithEvents btnAdd As Button
-    Friend WithEvents btnUpdate As Button
-    Friend WithEvents btnDelete As Button
-    Friend WithEvents btnClear As Button
-    Friend WithEvents btnViewHistory As Button
+    Friend WithEvents btnAdd As RoundedButton
+    Friend WithEvents btnUpdate As RoundedButton
+    Friend WithEvents btnDelete As RoundedButton
+    Friend WithEvents btnClear As RoundedButton
+    Friend WithEvents btnViewHistory As RoundedButton
     Friend WithEvents lblSearch As Label
     Friend WithEvents txtSearch As TextBox
-    Friend WithEvents btnSearchBorrowers As Button
-    Friend WithEvents btnRefreshBorrowers As Button
+    Friend WithEvents btnSearchBorrowers As RoundedButton
+    Friend WithEvents btnRefreshBorrowers As RoundedButton
     Friend WithEvents dgvBorrowers As DataGridView
     Friend WithEvents lblBorrowersSummary As Label
 End Class

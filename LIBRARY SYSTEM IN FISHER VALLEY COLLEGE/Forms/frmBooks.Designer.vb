@@ -31,10 +31,10 @@ Partial Class frmBooks
         lblSubtitle = New Label()
         lblTitle = New Label()
         grpDetails = New GroupBox()
-        btnClear = New Button()
-        btnDelete = New Button()
-        btnUpdate = New Button()
-        btnAdd = New Button()
+        btnClear = New RoundedButton()
+        btnDelete = New RoundedButton()
+        btnUpdate = New RoundedButton()
+        btnAdd = New RoundedButton()
         lblAvailableValue = New Label()
         lblAvailableCaption = New Label()
         numCopiesTotal = New NumericUpDown()
@@ -57,8 +57,8 @@ Partial Class frmBooks
         txtAccession = New TextBox()
         lblSearch = New Label()
         txtSearch = New TextBox()
-        btnSearchBooks = New Button()
-        btnRefreshBooks = New Button()
+        btnSearchBooks = New RoundedButton()
+        btnRefreshBooks = New RoundedButton()
         dgvBooks = New DataGridView()
         lblBooksSummary = New Label()
         pnlHeader.SuspendLayout()
@@ -311,6 +311,7 @@ Partial Class frmBooks
         btnAdd.ForeColor = Color.White
         btnAdd.Location = New Point(15, 382)
         btnAdd.Name = "btnAdd"
+        btnAdd.Kind = ButtonKind.Primary
         btnAdd.Size = New Size(120, 32)
         btnAdd.TabIndex = 20
         btnAdd.Text = "Add Book"
@@ -324,6 +325,7 @@ Partial Class frmBooks
         btnUpdate.ForeColor = Color.White
         btnUpdate.Location = New Point(145, 382)
         btnUpdate.Name = "btnUpdate"
+        btnUpdate.Kind = ButtonKind.Custom
         btnUpdate.Size = New Size(120, 32)
         btnUpdate.TabIndex = 21
         btnUpdate.Text = "Update"
@@ -337,6 +339,7 @@ Partial Class frmBooks
         btnDelete.ForeColor = Color.White
         btnDelete.Location = New Point(15, 422)
         btnDelete.Name = "btnDelete"
+        btnDelete.Kind = ButtonKind.Custom
         btnDelete.Size = New Size(120, 32)
         btnDelete.TabIndex = 22
         btnDelete.Text = "Delete"
@@ -347,6 +350,7 @@ Partial Class frmBooks
         btnClear.FlatStyle = FlatStyle.Flat
         btnClear.Location = New Point(145, 422)
         btnClear.Name = "btnClear"
+        btnClear.Kind = ButtonKind.Neutral
         btnClear.Size = New Size(120, 32)
         btnClear.TabIndex = 23
         btnClear.Text = "Clear Form"
@@ -379,6 +383,7 @@ Partial Class frmBooks
         btnSearchBooks.ForeColor = Color.White
         btnSearchBooks.Location = New Point(688, 76)
         btnSearchBooks.Name = "btnSearchBooks"
+        btnSearchBooks.Kind = ButtonKind.Primary
         btnSearchBooks.Size = New Size(80, 26)
         btnSearchBooks.TabIndex = 4
         btnSearchBooks.Text = "Search"
@@ -392,6 +397,7 @@ Partial Class frmBooks
         btnRefreshBooks.ForeColor = Color.FromArgb(CByte(17), CByte(78), CByte(128))
         btnRefreshBooks.Location = New Point(778, 76)
         btnRefreshBooks.Name = "btnRefreshBooks"
+        btnRefreshBooks.Kind = ButtonKind.Outline
         btnRefreshBooks.Size = New Size(80, 26)
         btnRefreshBooks.TabIndex = 5
         btnRefreshBooks.Text = "Refresh"
@@ -491,14 +497,14 @@ Partial Class frmBooks
     Friend WithEvents numCopiesTotal As NumericUpDown
     Friend WithEvents lblAvailableCaption As Label
     Friend WithEvents lblAvailableValue As Label
-    Friend WithEvents btnAdd As Button
-    Friend WithEvents btnUpdate As Button
-    Friend WithEvents btnDelete As Button
-    Friend WithEvents btnClear As Button
+    Friend WithEvents btnAdd As RoundedButton
+    Friend WithEvents btnUpdate As RoundedButton
+    Friend WithEvents btnDelete As RoundedButton
+    Friend WithEvents btnClear As RoundedButton
     Friend WithEvents lblSearch As Label
     Friend WithEvents txtSearch As TextBox
-    Friend WithEvents btnSearchBooks As Button
-    Friend WithEvents btnRefreshBooks As Button
+    Friend WithEvents btnSearchBooks As RoundedButton
+    Friend WithEvents btnRefreshBooks As RoundedButton
     Friend WithEvents dgvBooks As DataGridView
     Friend WithEvents lblBooksSummary As Label
 End Class

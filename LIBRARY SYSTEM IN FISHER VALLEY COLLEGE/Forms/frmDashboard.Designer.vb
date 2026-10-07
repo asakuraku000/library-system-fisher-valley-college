@@ -35,7 +35,7 @@ Partial Class frmDashboard
         pnlHeader = New Panel()
         lblSubtitle = New Label()
         lblTitle = New Label()
-        btnRefreshDashboard = New Button()
+        btnRefreshDashboard = New RoundedButton()
 
         pnlCardBooks = New Panel()
         lblBooksAccent = New Label()
@@ -124,6 +124,7 @@ Partial Class frmDashboard
         btnRefreshDashboard.ForeColor = Color.White
         btnRefreshDashboard.Location = New Point(1050, 17)
         btnRefreshDashboard.Name = "btnRefreshDashboard"
+        btnRefreshDashboard.Kind = ButtonKind.Primary
         btnRefreshDashboard.Size = New Size(110, 30)
         btnRefreshDashboard.TabIndex = 2
         btnRefreshDashboard.Text = "Refresh"
@@ -448,7 +449,7 @@ Partial Class frmDashboard
     Friend WithEvents pnlHeader As Panel
     Friend WithEvents lblTitle As Label
     Friend WithEvents lblSubtitle As Label
-    Friend WithEvents btnRefreshDashboard As Button
+    Friend WithEvents btnRefreshDashboard As RoundedButton
 
     Friend WithEvents pnlCardBooks As Panel
     Friend WithEvents lblBooksAccent As Label

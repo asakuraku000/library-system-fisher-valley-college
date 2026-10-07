@@ -41,8 +41,6 @@ Public Class frmMemberDashboard
     Private ReadOnly pnlHeader As New Panel()
     Private ReadOnly pnlContentHost As New Panel()
     Private ReadOnly picLogo As New PictureBox()
-    Private ReadOnly picYouTube As New PictureBox()
-    Private ReadOnly picFb As New PictureBox()
     Private ReadOnly lblTitle As New Label()
     Private ReadOnly lblWelcome As New Label()
 
@@ -100,14 +98,6 @@ Public Class frmMemberDashboard
         lblTitle.Location = New Point(84, 12)
         lblTitle.Text = "Library System"
 
-        picYouTube.BackColor = Color.WhiteSmoke
-        picYouTube.Size = New Size(28, 28)
-        picYouTube.TabStop = False
-
-        picFb.BackColor = Color.WhiteSmoke
-        picFb.Size = New Size(28, 28)
-        picFb.TabStop = False
-
         ' "Welcome, <name>" sits just left of the two boxes, right-aligned.
         ' Its width follows the text (long names grow to the LEFT, never
         ' past the title; if there's truly no room it shows "..." instead).
@@ -120,14 +110,12 @@ Public Class frmMemberDashboard
         lblWelcome.Text = "Welcome, " & AuthHelper.CurrentFullName
 
         pnlHeader.Controls.Add(lblWelcome)
-        pnlHeader.Controls.Add(picFb)
-        pnlHeader.Controls.Add(picYouTube)
         pnlHeader.Controls.Add(picLogo)
         pnlHeader.Controls.Add(lblTitle)
 
         ' keep the two boxes pinned to the right edge (48 / 82 px from it, like admin)
-        AddHandler pnlHeader.Resize, Sub(s, e) PlaceHeaderIcons()
-        PlaceHeaderIcons()
+        AddHandler pnlHeader.Resize, Sub(s, e) PlaceGreeting()
+        PlaceGreeting()
 
         ' --- sidebar ---
         pnlLeft.Dock = DockStyle.Left
@@ -160,13 +148,10 @@ Public Class frmMemberDashboard
         ResumeLayout(True)
     End Sub
 
-    Private Sub PlaceHeaderIcons()
-        picFb.Location = New Point(Math.Max(0, pnlHeader.ClientSize.Width - 48), 18)
-        picYouTube.Location = New Point(Math.Max(0, pnlHeader.ClientSize.Width - 82), 18)
-
-        ' Greeting: right edge sits 16 px left of the YouTube box; the width
-        ' is just the text (capped so it can't run into the title).
-        Dim rightEdge As Integer = picYouTube.Left - 16
+    Private Sub PlaceGreeting()
+        ' Greeting: right edge sits 20 px from the header's right edge; the
+        ' width is just the text (capped so it can't run into the title).
+        Dim rightEdge As Integer = pnlHeader.ClientSize.Width - 20
         Dim leftLimit As Integer = lblTitle.Right + 20
         Dim maxWidth As Integer = Math.Max(60, rightEdge - leftLimit)
         Dim textWidth As Integer = TextRenderer.MeasureText(lblWelcome.Text, lblWelcome.Font).Width + 6
@@ -289,6 +274,9 @@ Public Class frmMemberDashboard
         End If
 
         pnlContentHost.Controls.Clear()
+
+        ' login look for fields + tables on whichever page is opened
+        UiStyle.Apply(f)
 
         f.TopLevel = False
         f.FormBorderStyle = FormBorderStyle.None

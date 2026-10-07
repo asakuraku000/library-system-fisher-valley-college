@@ -28,7 +28,7 @@ Public Class frmMemberHome
     Private ReadOnly pnlHeader As New Panel()
     Private ReadOnly lblTitle As New Label()
     Private ReadOnly lblSubtitle As New Label()
-    Private ReadOnly btnRefresh As New Button()
+    Private ReadOnly btnRefresh As New RoundedButton()
 
     ' --- Cards ---
     Private ReadOnly tlpCards As New TableLayoutPanel()

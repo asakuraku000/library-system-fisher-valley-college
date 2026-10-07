@@ -30,7 +30,7 @@ Public Class frmMemberHistory
     Private ReadOnly lblFilter As New Label()
     Private ReadOnly cboStatus As New ComboBox()
     Private ReadOnly txtSearch As New TextBox()
-    Private ReadOnly btnRefresh As New Button()
+    Private ReadOnly btnRefresh As New RoundedButton()
     Private ReadOnly lblSummary As New Label()
     Private ReadOnly grid As New DataGridView()
     Private ReadOnly lblNote As New Label()
@@ -75,6 +75,7 @@ Public Class frmMemberHistory
 
         btnRefresh.Size = New Size(90, 30)
         btnRefresh.Text = "Refresh"
+        btnRefresh.Kind = ButtonKind.Outline
         btnRefresh.Font = New Font("Segoe UI", 9.0F)
         btnRefresh.FlatStyle = FlatStyle.Flat
         btnRefresh.FlatAppearance.BorderSize = 0

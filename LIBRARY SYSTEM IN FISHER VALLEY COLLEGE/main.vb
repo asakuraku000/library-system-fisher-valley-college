@@ -38,14 +38,32 @@ Public Class main
         PanelHeader.Controls.Add(lblWelcome)
 
         AddHandler PanelHeader.Resize, Sub(s, ev) PlaceWelcome()
-        ' the boxes are anchored to the right edge, so re-place after THEY move too
-        AddHandler PictureBoxYouTube.LocationChanged, Sub(s, ev) PlaceWelcome()
+        ' The small boxes are anchored to the right edge, so re-place the greeting
+        ' whenever one of THEM moves too. They're found by anchor, not by name,
+        ' so this doesn't depend on what the Designer calls them.
+        For Each c As Control In PanelHeader.Controls
+            If IsRightPictureBox(c) Then AddHandler c.LocationChanged, Sub(s, ev) PlaceWelcome()
+        Next
         PlaceWelcome()
     End Sub
 
+    Private Function IsRightPictureBox(c As Control) As Boolean
+        Return TypeOf c Is PictureBox AndAlso (c.Anchor And AnchorStyles.Right) = AnchorStyles.Right
+    End Function
+
     Private Sub PlaceWelcome()
-        Dim rightEdge As Integer = PictureBoxYouTube.Left - 16
-        Dim leftLimit As Integer = LabelTitle.Right + 20
+        ' right edge: 16 px left of the left-most right-anchored box
+        Dim rightEdge As Integer = PanelHeader.ClientSize.Width - 16
+        ' left limit: just past the "Library System" title (any other label in the header)
+        Dim leftLimit As Integer = 0
+        For Each c As Control In PanelHeader.Controls
+            If IsRightPictureBox(c) Then
+                rightEdge = Math.Min(rightEdge, c.Left - 16)
+            ElseIf TypeOf c Is Label AndAlso c IsNot lblWelcome Then
+                leftLimit = Math.Max(leftLimit, c.Right + 20)
+            End If
+        Next
+
         Dim maxWidth As Integer = Math.Max(60, rightEdge - leftLimit)
         Dim textWidth As Integer = TextRenderer.MeasureText(lblWelcome.Text, lblWelcome.Font).Width + 6
         lblWelcome.Width = Math.Min(textWidth, maxWidth)
@@ -105,6 +123,9 @@ Public Class main
         End If
 
         PanelContentHost.Controls.Clear()
+
+        ' login look for fields + tables on whichever page is opened
+        UiStyle.Apply(f)
 
         f.TopLevel = False
         f.FormBorderStyle = FormBorderStyle.None

@@ -42,8 +42,6 @@ Partial Class main
         TextBoxAuthor = New TextBox()
         ButtonBorrow = New Button()
         ButtonReturn = New Button()
-        PictureBoxFb = New PictureBox()
-        PictureBoxYouTube = New PictureBox()
         PictureBoxLogo = New PictureBox()
         LabelTitle = New Label()
         PanelHeader = New Panel()
@@ -64,8 +62,6 @@ Partial Class main
         SplitContainer1.Panel2.SuspendLayout()
         SplitContainer1.SuspendLayout()
         PanelReportOptions.SuspendLayout()
-        CType(PictureBoxFb, ComponentModel.ISupportInitialize).BeginInit()
-        CType(PictureBoxYouTube, ComponentModel.ISupportInitialize).BeginInit()
         CType(PictureBoxLogo, ComponentModel.ISupportInitialize).BeginInit()
         PanelHeader.SuspendLayout()
         PanelLeft.SuspendLayout()
@@ -271,26 +267,6 @@ Partial Class main
         ButtonReturn.TabIndex = 15
         ButtonReturn.Text = "Return"
         ' 
-        ' PictureBoxFb
-        ' 
-        PictureBoxFb.Anchor = AnchorStyles.Top Or AnchorStyles.Right
-        PictureBoxFb.BackColor = Color.WhiteSmoke
-        PictureBoxFb.Location = New Point(1298, 18)
-        PictureBoxFb.Name = "PictureBoxFb"
-        PictureBoxFb.Size = New Size(28, 28)
-        PictureBoxFb.TabIndex = 0
-        PictureBoxFb.TabStop = False
-        ' 
-        ' PictureBoxYouTube
-        ' 
-        PictureBoxYouTube.Anchor = AnchorStyles.Top Or AnchorStyles.Right
-        PictureBoxYouTube.BackColor = Color.WhiteSmoke
-        PictureBoxYouTube.Location = New Point(1264, 18)
-        PictureBoxYouTube.Name = "PictureBoxYouTube"
-        PictureBoxYouTube.Size = New Size(28, 28)
-        PictureBoxYouTube.TabIndex = 1
-        PictureBoxYouTube.TabStop = False
-        ' 
         ' PictureBoxLogo
         ' 
         PictureBoxLogo.BackColor = Color.WhiteSmoke
@@ -316,8 +292,6 @@ Partial Class main
         ' PanelHeader
         ' 
         PanelHeader.BackColor = Color.FromArgb(CByte(10), CByte(120), CByte(200))
-        PanelHeader.Controls.Add(PictureBoxFb)
-        PanelHeader.Controls.Add(PictureBoxYouTube)
         PanelHeader.Controls.Add(PictureBoxLogo)
         PanelHeader.Controls.Add(LabelTitle)
         PanelHeader.Dock = DockStyle.Top
@@ -502,8 +476,6 @@ Partial Class main
         SplitContainer1.ResumeLayout(False)
         PanelReportOptions.ResumeLayout(False)
         PanelReportOptions.PerformLayout()
-        CType(PictureBoxFb, ComponentModel.ISupportInitialize).EndInit()
-        CType(PictureBoxYouTube, ComponentModel.ISupportInitialize).EndInit()
         CType(PictureBoxLogo, ComponentModel.ISupportInitialize).EndInit()
         PanelHeader.ResumeLayout(False)
         PanelHeader.PerformLayout()
@@ -531,8 +503,6 @@ Partial Class main
     Private WithEvents TextBoxAuthor As TextBox
     Private WithEvents ButtonBorrow As Button
     Private WithEvents ButtonReturn As Button
-    Private WithEvents PictureBoxFb As PictureBox
-    Private WithEvents PictureBoxYouTube As PictureBox
     Private WithEvents PictureBoxLogo As PictureBox
     Private WithEvents LabelTitle As Label
     Private WithEvents PanelHeader As Panel

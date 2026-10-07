@@ -41,11 +41,11 @@ Partial Class frmOverdueBooks
         lblTitle = New Label()
         lblSearch = New Label()
         txtSearch = New TextBox()
-        btnSearch = New Button()
-        btnRefresh = New Button()
+        btnSearch = New RoundedButton()
+        btnRefresh = New RoundedButton()
         dgvOverdue = New DataGridView()
         lblSummary = New Label()
-        btnMarkReturned = New Button()
+        btnMarkReturned = New RoundedButton()
         pnlHeader.SuspendLayout()
         CType(dgvOverdue, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
@@ -110,6 +110,7 @@ Partial Class frmOverdueBooks
         btnSearch.ForeColor = Color.White
         btnSearch.Location = New Point(430, 75)
         btnSearch.Name = "btnSearch"
+        btnSearch.Kind = ButtonKind.Primary
         btnSearch.Size = New Size(90, 26)
         btnSearch.TabIndex = 3
         btnSearch.Text = "Search"
@@ -123,6 +124,7 @@ Partial Class frmOverdueBooks
         btnRefresh.ForeColor = Color.FromArgb(CByte(17), CByte(78), CByte(128))
         btnRefresh.Location = New Point(530, 75)
         btnRefresh.Name = "btnRefresh"
+        btnRefresh.Kind = ButtonKind.Outline
         btnRefresh.Size = New Size(90, 26)
         btnRefresh.TabIndex = 4
         btnRefresh.Text = "Refresh"
@@ -178,6 +180,7 @@ Partial Class frmOverdueBooks
         btnMarkReturned.ForeColor = Color.White
         btnMarkReturned.Location = New Point(600, 441)
         btnMarkReturned.Name = "btnMarkReturned"
+        btnMarkReturned.Kind = ButtonKind.Custom
         btnMarkReturned.Size = New Size(150, 32)
         btnMarkReturned.TabIndex = 7
         btnMarkReturned.Text = "Mark as Returned"
@@ -215,9 +218,9 @@ Partial Class frmOverdueBooks
     Friend WithEvents lblSubtitle As Label
     Friend WithEvents lblSearch As Label
     Friend WithEvents txtSearch As TextBox
-    Friend WithEvents btnSearch As Button
-    Friend WithEvents btnRefresh As Button
+    Friend WithEvents btnSearch As RoundedButton
+    Friend WithEvents btnRefresh As RoundedButton
     Friend WithEvents dgvOverdue As DataGridView
     Friend WithEvents lblSummary As Label
-    Friend WithEvents btnMarkReturned As Button
+    Friend WithEvents btnMarkReturned As RoundedButton
 End Class

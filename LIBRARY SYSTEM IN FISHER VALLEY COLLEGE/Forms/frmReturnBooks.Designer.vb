@@ -35,11 +35,11 @@ Partial Class frmReturnBooks
         lblFineCaption = New Label()
         lblStatusValue = New Label()
         lblStatusCaption = New Label()
-        btnReturn = New Button()
-        btnRefresh = New Button()
+        btnReturn = New RoundedButton()
+        btnRefresh = New RoundedButton()
         lblSearch = New Label()
         txtSearch = New TextBox()
-        btnSearch = New Button()
+        btnSearch = New RoundedButton()
         dgvBorrowed = New DataGridView()
         lblSummary = New Label()
         pnlSuggestions = New Panel()
@@ -147,6 +147,7 @@ Partial Class frmReturnBooks
         btnReturn.ForeColor = Color.White
         btnReturn.Location = New Point(15, 120)
         btnReturn.Name = "btnReturn"
+        btnReturn.Kind = ButtonKind.Primary
         btnReturn.Size = New Size(250, 40)
         btnReturn.TabIndex = 4
         btnReturn.Text = "Return Selected Book"
@@ -179,6 +180,7 @@ Partial Class frmReturnBooks
         btnSearch.ForeColor = Color.White
         btnSearch.Location = New Point(716, 76)
         btnSearch.Name = "btnSearch"
+        btnSearch.Kind = ButtonKind.Primary
         btnSearch.Size = New Size(80, 26)
         btnSearch.TabIndex = 4
         btnSearch.Text = "Search"
@@ -192,6 +194,7 @@ Partial Class frmReturnBooks
         btnRefresh.ForeColor = Color.FromArgb(CByte(17), CByte(78), CByte(128))
         btnRefresh.Location = New Point(806, 76)
         btnRefresh.Name = "btnRefresh"
+        btnRefresh.Kind = ButtonKind.Outline
         btnRefresh.Size = New Size(80, 26)
         btnRefresh.TabIndex = 5
         btnRefresh.Text = "Refresh"
@@ -314,11 +317,11 @@ Partial Class frmReturnBooks
     Friend WithEvents lblStatusValue As Label
     Friend WithEvents lblFineCaption As Label
     Friend WithEvents lblFineValue As Label
-    Friend WithEvents btnReturn As Button
+    Friend WithEvents btnReturn As RoundedButton
     Friend WithEvents lblSearch As Label
     Friend WithEvents txtSearch As TextBox
-    Friend WithEvents btnSearch As Button
-    Friend WithEvents btnRefresh As Button
+    Friend WithEvents btnSearch As RoundedButton
+    Friend WithEvents btnRefresh As RoundedButton
     Friend WithEvents dgvBorrowed As DataGridView
     Friend WithEvents lblSummary As Label
     Friend WithEvents pnlSuggestions As Panel

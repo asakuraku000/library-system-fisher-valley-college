@@ -44,14 +44,14 @@ Partial Class frmManageUsers
         lblFullName = New Label()
         txtIdNumber = New TextBox()
         lblIdNumber = New Label()
-        btnClearUser = New Button()
-        btnDeleteUser = New Button()
-        btnUpdateUser = New Button()
-        btnAddUser = New Button()
+        btnClearUser = New RoundedButton()
+        btnDeleteUser = New RoundedButton()
+        btnUpdateUser = New RoundedButton()
+        btnAddUser = New RoundedButton()
         lblSearch = New Label()
         txtSearch = New TextBox()
-        btnSearchUsers = New Button()
-        btnRefreshUsers = New Button()
+        btnSearchUsers = New RoundedButton()
+        btnRefreshUsers = New RoundedButton()
         dgvUsers = New DataGridView()
         lblUsersSummary = New Label()
         pnlHeader.SuspendLayout()
@@ -218,6 +218,7 @@ Partial Class frmManageUsers
         btnAddUser.ForeColor = Color.White
         btnAddUser.Location = New Point(15, 280)
         btnAddUser.Name = "btnAddUser"
+        btnAddUser.Kind = ButtonKind.Primary
         btnAddUser.Size = New Size(120, 32)
         btnAddUser.TabIndex = 11
         btnAddUser.Text = "Add User"
@@ -231,6 +232,7 @@ Partial Class frmManageUsers
         btnUpdateUser.ForeColor = Color.White
         btnUpdateUser.Location = New Point(145, 280)
         btnUpdateUser.Name = "btnUpdateUser"
+        btnUpdateUser.Kind = ButtonKind.Custom
         btnUpdateUser.Size = New Size(120, 32)
         btnUpdateUser.TabIndex = 12
         btnUpdateUser.Text = "Update"
@@ -244,6 +246,7 @@ Partial Class frmManageUsers
         btnDeleteUser.ForeColor = Color.White
         btnDeleteUser.Location = New Point(15, 320)
         btnDeleteUser.Name = "btnDeleteUser"
+        btnDeleteUser.Kind = ButtonKind.Custom
         btnDeleteUser.Size = New Size(120, 32)
         btnDeleteUser.TabIndex = 13
         btnDeleteUser.Text = "Delete"
@@ -254,6 +257,7 @@ Partial Class frmManageUsers
         btnClearUser.FlatStyle = FlatStyle.Flat
         btnClearUser.Location = New Point(145, 320)
         btnClearUser.Name = "btnClearUser"
+        btnClearUser.Kind = ButtonKind.Neutral
         btnClearUser.Size = New Size(120, 32)
         btnClearUser.TabIndex = 14
         btnClearUser.Text = "Clear Form"
@@ -286,6 +290,7 @@ Partial Class frmManageUsers
         btnSearchUsers.ForeColor = Color.White
         btnSearchUsers.Location = New Point(688, 76)
         btnSearchUsers.Name = "btnSearchUsers"
+        btnSearchUsers.Kind = ButtonKind.Primary
         btnSearchUsers.Size = New Size(80, 26)
         btnSearchUsers.TabIndex = 4
         btnSearchUsers.Text = "Search"
@@ -299,6 +304,7 @@ Partial Class frmManageUsers
         btnRefreshUsers.ForeColor = Color.FromArgb(CByte(17), CByte(78), CByte(128))
         btnRefreshUsers.Location = New Point(778, 76)
         btnRefreshUsers.Name = "btnRefreshUsers"
+        btnRefreshUsers.Kind = ButtonKind.Outline
         btnRefreshUsers.Size = New Size(80, 26)
         btnRefreshUsers.TabIndex = 5
         btnRefreshUsers.Text = "Refresh"
@@ -388,14 +394,14 @@ Partial Class frmManageUsers
     Friend WithEvents lblPasswordHint As Label
     Friend WithEvents lblRole As Label
     Friend WithEvents cmbRole As ComboBox
-    Friend WithEvents btnAddUser As Button
-    Friend WithEvents btnUpdateUser As Button
-    Friend WithEvents btnDeleteUser As Button
-    Friend WithEvents btnClearUser As Button
+    Friend WithEvents btnAddUser As RoundedButton
+    Friend WithEvents btnUpdateUser As RoundedButton
+    Friend WithEvents btnDeleteUser As RoundedButton
+    Friend WithEvents btnClearUser As RoundedButton
     Friend WithEvents lblSearch As Label
     Friend WithEvents txtSearch As TextBox
-    Friend WithEvents btnSearchUsers As Button
-    Friend WithEvents btnRefreshUsers As Button
+    Friend WithEvents btnSearchUsers As RoundedButton
+    Friend WithEvents btnRefreshUsers As RoundedButton
     Friend WithEvents dgvUsers As DataGridView
     Friend WithEvents lblUsersSummary As Label
 End Class

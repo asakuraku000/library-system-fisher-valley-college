@@ -25,7 +25,7 @@ Public Class frmMemberBorrowed
 
     Private ReadOnly pnlToolbar As New FlowLayoutPanel()
     Private ReadOnly chkOverdueOnly As New CheckBox()
-    Private ReadOnly btnRefresh As New Button()
+    Private ReadOnly btnRefresh As New RoundedButton()
     Private ReadOnly lblSummary As New Label()
     Private ReadOnly grid As New DataGridView()
     Private ReadOnly lblNote As New Label()
@@ -54,6 +54,7 @@ Public Class frmMemberBorrowed
 
         btnRefresh.Size = New Size(90, 30)
         btnRefresh.Text = "Refresh"
+        btnRefresh.Kind = ButtonKind.Outline
         btnRefresh.Font = New Font("Segoe UI", 9.0F)
         btnRefresh.FlatStyle = FlatStyle.Flat
         btnRefresh.FlatAppearance.BorderSize = 0

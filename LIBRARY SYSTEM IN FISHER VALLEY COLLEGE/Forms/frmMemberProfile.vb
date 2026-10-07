@@ -41,14 +41,14 @@ Public Class frmMemberProfile
     Private ReadOnly txtContact As New TextBox()
     Private ReadOnly txtEmail As New TextBox()
     Private ReadOnly txtAddress As New TextBox()
-    Private ReadOnly btnSaveContact As New Button()
+    Private ReadOnly btnSaveContact As New RoundedButton()
 
     ' --- change password ---
     Private ReadOnly txtCurrentPw As New TextBox()
     Private ReadOnly txtNewPw As New TextBox()
     Private ReadOnly txtConfirmPw As New TextBox()
     Private ReadOnly chkShowPw As New CheckBox()
-    Private ReadOnly btnChangePw As New Button()
+    Private ReadOnly btnChangePw As New RoundedButton()
 
     Public Sub New()
         MyBase.New("My Profile", "Fisher Valley College Library — Your Account")

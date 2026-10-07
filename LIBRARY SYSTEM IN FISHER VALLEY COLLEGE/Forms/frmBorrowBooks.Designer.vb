@@ -51,9 +51,9 @@ Partial Class frmBorrowBooks
         dtpBorrowed = New DateTimePicker()
         lblDueDate = New Label()
         dtpDueDate = New DateTimePicker()
-        btnBorrow = New Button()
-        btnClear = New Button()
-        btnCancel = New Button()
+        btnBorrow = New RoundedButton()
+        btnClear = New RoundedButton()
+        btnCancel = New RoundedButton()
         pnlMemberSuggestions = New Panel()
         dgvMemberSuggestions = New DataGridView()
         pnlBookSuggestions = New Panel()
@@ -328,6 +328,7 @@ Partial Class frmBorrowBooks
         btnBorrow.ForeColor = Color.White
         btnBorrow.Location = New Point(20, 460)
         btnBorrow.Name = "btnBorrow"
+        btnBorrow.Kind = ButtonKind.Primary
         btnBorrow.Size = New Size(120, 35)
         btnBorrow.TabIndex = 2
         btnBorrow.Text = "Confirm Borrow"
@@ -343,6 +344,7 @@ Partial Class frmBorrowBooks
         btnClear.ForeColor = Color.White
         btnClear.Location = New Point(150, 460)
         btnClear.Name = "btnClear"
+        btnClear.Kind = ButtonKind.Neutral
         btnClear.Size = New Size(100, 35)
         btnClear.TabIndex = 3
         btnClear.Text = "Clear"
@@ -358,6 +360,7 @@ Partial Class frmBorrowBooks
         btnCancel.ForeColor = Color.White
         btnCancel.Location = New Point(760, 460)
         btnCancel.Name = "btnCancel"
+        btnCancel.Kind = ButtonKind.Neutral
         btnCancel.Size = New Size(120, 35)
         btnCancel.TabIndex = 4
         btnCancel.Text = "Close"
@@ -498,9 +501,9 @@ Partial Class frmBorrowBooks
     Friend WithEvents dtpBorrowed As DateTimePicker
     Friend WithEvents lblDueDate As Label
     Friend WithEvents dtpDueDate As DateTimePicker
-    Friend WithEvents btnBorrow As Button
-    Friend WithEvents btnClear As Button
-    Friend WithEvents btnCancel As Button
+    Friend WithEvents btnBorrow As RoundedButton
+    Friend WithEvents btnClear As RoundedButton
+    Friend WithEvents btnCancel As RoundedButton
     Friend WithEvents pnlMemberSuggestions As Panel
     Friend WithEvents dgvMemberSuggestions As DataGridView
     Friend WithEvents pnlBookSuggestions As Panel
