@@ -178,6 +178,7 @@ Public Class frmManageUsers
                     {"@role", cmbRole.SelectedItem.ToString()}
                 })
 
+            ActivityLog.Write("Add User", $"Created account ""{txtUsername.Text.Trim()}"" ({txtFullName.Text.Trim()}) as {cmbRole.SelectedItem}")
             MessageBox.Show("Account created successfully.", "Success",
                              MessageBoxButtons.OK, MessageBoxIcon.Information)
             LoadUsers(txtSearch.Text.Trim())
@@ -263,6 +264,8 @@ Public Class frmManageUsers
                 AuthHelper.CurrentRole = newRole
             End If
 
+            ActivityLog.Write("Edit User", $"Edited account ""{txtUsername.Text.Trim()}"" ({txtFullName.Text.Trim()}); role: {newRole}" &
+                              If(String.IsNullOrWhiteSpace(txtPassword.Text), "", "; password was reset"))
             MessageBox.Show("Account updated successfully.", "Success",
                              MessageBoxButtons.OK, MessageBoxIcon.Information)
             LoadUsers(txtSearch.Text.Trim())
@@ -305,10 +308,14 @@ Public Class frmManageUsers
                 "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning)
             If confirm <> DialogResult.Yes Then Return
 
+            Dim deletedName As String = roleDt.Rows(0)("full_name").ToString()
+            Dim deletedRole As String = roleDt.Rows(0)("role").ToString()
+
             DBConnection.ExecuteNonQuery(
                 "DELETE FROM tbl_members WHERE member_id = @id",
                 New Dictionary(Of String, Object) From {{"@id", selectedMemberId}})
 
+            ActivityLog.Write("Delete User", $"Deleted account ""{deletedName}"" (role: {deletedRole})")
             MessageBox.Show("Account deleted.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
             LoadUsers(txtSearch.Text.Trim())
             ClearForm()

@@ -375,6 +375,7 @@ Public Class frmMemberProfile
                     {"@id", AuthHelper.CurrentMemberId}
                 })
 
+            ActivityLog.Write("Update Profile", "Updated their contact details (phone / email / address)")
             MessageBox.Show("Your contact details were saved.", "My Profile",
                             MessageBoxButtons.OK, MessageBoxIcon.Information)
         Catch ex As Exception
@@ -448,6 +449,7 @@ Public Class frmMemberProfile
             txtConfirmPw.Clear()
             chkShowPw.Checked = False
 
+            ActivityLog.Write("Change Password", "Changed their own password")
             MessageBox.Show("Your password was changed. Use the new password the next time you log in.",
                             "Change Password", MessageBoxButtons.OK, MessageBoxIcon.Information)
 

@@ -23,6 +23,7 @@ Public Class main
         Me.WindowState = FormWindowState.Maximized
         SetupWelcome()
         StyleSidebarIcons()
+        SetupExtraSidebar()
         ShowInContent(New frmDashboard())
     End Sub
 
@@ -97,6 +98,49 @@ Public Class main
             b.FlatAppearance.MouseOverBackColor = Color.FromArgb(28, 104, 168)
             b.FlatAppearance.MouseDownBackColor = Color.FromArgb(12, 62, 104)
         Next
+    End Sub
+
+    ' Two extra sidebar screens, added in code so main.Designer.vb stays untouched:
+    '   Book History  - every returned / lost book with return date, condition and penalties
+    '   Activity Log  - what users did and when (logins, borrowing, edits, deletions ...)
+    Private ReadOnly ButtonBookHistory As New Button()
+    Private ReadOnly ButtonActivityLog As New Button()
+
+    Private Sub SetupExtraSidebar()
+        AddSidebarButton(ButtonBookHistory, "Book History", "side_return_white", AddressOf ButtonBookHistory_Click)
+        AddSidebarButton(ButtonActivityLog, "Activity Log", "side_manage_white", AddressOf ButtonActivityLog_Click)
+    End Sub
+
+    Private Sub AddSidebarButton(b As Button, caption As String, iconName As String, handler As EventHandler)
+        b.Name = "Button" & caption.Replace(" ", "")
+        b.Text = caption
+        b.Dock = DockStyle.Top
+        b.Size = New Size(160, 48)
+        b.FlatStyle = FlatStyle.Flat
+        b.FlatAppearance.BorderSize = 0
+        b.ForeColor = Color.White
+        b.Image = AppIcons.Scaled(iconName, 20)
+        b.ImageAlign = ContentAlignment.MiddleLeft
+        b.TextAlign = ContentAlignment.MiddleLeft
+        b.TextImageRelation = TextImageRelation.ImageBeforeText
+        b.Padding = New Padding(14, 0, 0, 0)
+        b.Font = New Font("Segoe UI", 9.5F)
+        b.Cursor = Cursors.Hand
+        b.FlatAppearance.MouseOverBackColor = Color.FromArgb(28, 104, 168)
+        b.FlatAppearance.MouseDownBackColor = Color.FromArgb(12, 62, 104)
+        AddHandler b.Click, handler
+
+        PanelLeft.Controls.Add(b)
+        ' index 0 = last in the Dock.Top stack, i.e. right under the previous last button (Reports)
+        PanelLeft.Controls.SetChildIndex(b, 0)
+    End Sub
+
+    Private Sub ButtonBookHistory_Click(sender As Object, e As EventArgs)
+        ShowInContent(New frmBookHistory())
+    End Sub
+
+    Private Sub ButtonActivityLog_Click(sender As Object, e As EventArgs)
+        ShowInContent(New frmActivityLog())
     End Sub
 
     Private Sub PanelReportOptions_Paint(sender As Object, e As PaintEventArgs) Handles PanelReportOptions.Paint

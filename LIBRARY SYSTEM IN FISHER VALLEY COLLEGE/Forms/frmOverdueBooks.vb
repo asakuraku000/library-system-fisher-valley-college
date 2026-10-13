@@ -159,17 +159,29 @@ Public Class frmOverdueBooks
         If confirm <> DialogResult.Yes Then Return
 
         Try
-            Dim sql As String = "UPDATE tbl_transactions SET date_returned = @today, status = 'Returned', fine_amount = @fine WHERE transaction_id = @id"
+            DBConnection.EnsureSchema()
+
+            Dim sql As String = "UPDATE tbl_transactions SET date_returned = @today, returned_at = NOW(), return_condition = 'Good', " &
+                                "processed_by = @by, status = 'Returned', fine_amount = @fine WHERE transaction_id = @id"
 
             Dim finalFine As Decimal = daysOverdue * FINE_PER_DAY
 
             Dim params As New Dictionary(Of String, Object) From {
                 {"@today", DateTime.Today},
                 {"@fine", finalFine},
+                {"@by", If(String.IsNullOrWhiteSpace(AuthHelper.CurrentFullName), CObj(DBNull.Value), CObj(AuthHelper.CurrentFullName))},
                 {"@id", transactionId}
             }
 
             DBConnection.ExecuteNonQuery(sql, params)
+
+            ' The copy is back on the shelf, and the return goes into the permanent history.
+            DBConnection.ExecuteNonQuery(
+                "UPDATE tbl_books SET copies_available = copies_available + 1 " &
+                "WHERE book_id = (SELECT book_id FROM tbl_transactions WHERE transaction_id = @id)",
+                New Dictionary(Of String, Object) From {{"@id", transactionId}})
+            DBConnection.RecordBookHistory(transactionId)
+            ActivityLog.Write("Return Book", $"""{bookTitle}"" marked as returned from Overdue Books; late fine PHP {finalFine:N2}")
 
             MessageBox.Show("Book marked as returned. Fine recorded: PHP " & finalFine.ToString("N2"),
                              "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)

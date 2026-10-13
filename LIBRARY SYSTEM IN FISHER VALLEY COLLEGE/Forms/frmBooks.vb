@@ -14,6 +14,9 @@ Public Class frmBooks
     Private originalTotal As Integer = 0
     Private originalAvailable As Integer = 0
 
+    ' Price of one copy (PHP). The damaged / lost penalty is a percent of this.
+    Private ReadOnly numPrice As New NumericUpDown()
+
     Private Sub frmBooks_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Dim connMessage As String = ""
         If Not DBConnection.TestConnection(connMessage) Then
@@ -23,6 +26,9 @@ Public Class frmBooks
                 "Make sure MySQL/XAMPP is running and that library_system_db.sql has been imported, then click Refresh.",
                 "Database Not Connected", MessageBoxButtons.OK, MessageBoxIcon.Warning)
         End If
+
+        DBConnection.EnsureSchema()
+        BuildPriceField()
 
         cmbCategory.Items.AddRange(New Object() {
             "Information Technology", "Computer Science", "Information Systems",
@@ -45,7 +51,7 @@ Public Class frmBooks
             Dim sql As String =
                 "SELECT book_id AS `ID`, accession_number AS `Accession No.`, isbn AS `ISBN`, title AS `Title`, " &
                 "author AS `Author`, publisher AS `Publisher`, year_published AS `Year Published`, category AS `Category`, " &
-                "copies_total AS `Total`, copies_available AS `Available`, status AS `Status`, date_added AS `Date Added` " &
+                "copies_total AS `Total`, copies_available AS `Available`, status AS `Status`, price AS `Price (PHP)`, date_added AS `Date Added` " &
                 "FROM tbl_books"
 
             Dim params As New Dictionary(Of String, Object)
@@ -62,6 +68,9 @@ Public Class frmBooks
 
             If dgvBooks.Columns.Contains("ID") Then
                 dgvBooks.Columns("ID").Visible = False
+            End If
+            If dgvBooks.Columns.Contains("Price (PHP)") Then
+                dgvBooks.Columns("Price (PHP)").DefaultCellStyle.Format = "N2"
             End If
             If dgvBooks.Columns.Contains("Date Added") Then
                 dgvBooks.Columns("Date Added").DefaultCellStyle.Format = "MMM d, yyyy"
@@ -114,6 +123,10 @@ Public Class frmBooks
         cmbCategory.Text = row.Cells("Category").Value?.ToString()
         cmbStatus.Text = row.Cells("Status").Value?.ToString()
 
+        Dim priceValue As Decimal = 0D
+        If dgvBooks.Columns.Contains("Price (PHP)") Then Decimal.TryParse(row.Cells("Price (PHP)").Value?.ToString(), priceValue)
+        numPrice.Value = Math.Max(numPrice.Minimum, Math.Min(numPrice.Maximum, priceValue))
+
         Integer.TryParse(row.Cells("Total").Value?.ToString(), originalTotal)
         Integer.TryParse(row.Cells("Available").Value?.ToString(), originalAvailable)
 
@@ -140,6 +153,7 @@ Public Class frmBooks
         cmbCategory.Text = ""
         cmbStatus.Text = "Available"
         numCopiesTotal.Value = 1
+        numPrice.Value = 0
         lblAvailableValue.Text = "0"
 
         dgvBooks.ClearSelection()
@@ -228,8 +242,8 @@ Public Class frmBooks
             Dim status As String = If(String.IsNullOrWhiteSpace(cmbStatus.Text), "Available", cmbStatus.Text)
 
             DBConnection.ExecuteNonQuery(
-                "INSERT INTO tbl_books (accession_number, isbn, title, author, publisher, year_published, category, copies_total, copies_available, status) " &
-                "VALUES (@acc, @isbn, @title, @author, @pub, @year, @cat, @total, @avail, @status)",
+                "INSERT INTO tbl_books (accession_number, isbn, title, author, publisher, year_published, category, copies_total, copies_available, status, price) " &
+                "VALUES (@acc, @isbn, @title, @author, @pub, @year, @cat, @total, @avail, @status, @price)",
                 New Dictionary(Of String, Object) From {
                     {"@acc", accession},
                     {"@isbn", If(String.IsNullOrWhiteSpace(isbn), CObj(DBNull.Value), isbn)},
@@ -240,9 +254,11 @@ Public Class frmBooks
                     {"@cat", cmbCategory.Text.Trim()},
                     {"@total", totalCopies},
                     {"@avail", totalCopies}, ' a brand-new book starts with all copies available
-                    {"@status", status}
+                    {"@status", status},
+                    {"@price", numPrice.Value}
                 })
 
+            ActivityLog.Write("Add Book", $"Added book ""{txtTitle.Text.Trim()}"" (Accession No. {accession}, {totalCopies} copies, price PHP {numPrice.Value:N2})")
             MessageBox.Show("Book added to the catalog.", "Success",
                              MessageBoxButtons.OK, MessageBoxIcon.Information)
 
@@ -289,7 +305,7 @@ Public Class frmBooks
 
             DBConnection.ExecuteNonQuery(
                 "UPDATE tbl_books SET accession_number = @acc, isbn = @isbn, title = @title, author = @author, " &
-                "publisher = @pub, year_published = @year, category = @cat, copies_total = @total, copies_available = @avail, status = @status " &
+                "publisher = @pub, year_published = @year, category = @cat, copies_total = @total, copies_available = @avail, status = @status, price = @price " &
                 "WHERE book_id = @id",
                 New Dictionary(Of String, Object) From {
                     {"@acc", accession},
@@ -302,9 +318,11 @@ Public Class frmBooks
                     {"@total", newTotal},
                     {"@avail", newAvailable},
                     {"@status", status},
+                    {"@price", numPrice.Value},
                     {"@id", selectedBookId}
                 })
 
+            ActivityLog.Write("Edit Book", $"Edited book ""{txtTitle.Text.Trim()}"" (Accession No. {accession}, {newTotal} copies, price PHP {numPrice.Value:N2})")
             MessageBox.Show("Book details updated.", "Success",
                              MessageBoxButtons.OK, MessageBoxIcon.Information)
 
@@ -330,10 +348,14 @@ Public Class frmBooks
         If confirm <> DialogResult.Yes Then Return
 
         Try
+            Dim deletedTitle As String = txtTitle.Text.Trim()
+            Dim deletedAccession As String = txtAccession.Text.Trim()
+
             DBConnection.ExecuteNonQuery(
                 "DELETE FROM tbl_books WHERE book_id = @id",
                 New Dictionary(Of String, Object) From {{"@id", selectedBookId}})
 
+            ActivityLog.Write("Delete Book", $"Deleted book ""{deletedTitle}"" (Accession No. {deletedAccession})")
             MessageBox.Show("Book removed from the catalog.", "Success",
                              MessageBoxButtons.OK, MessageBoxIcon.Information)
 
@@ -343,6 +365,34 @@ Public Class frmBooks
         Catch ex As Exception
             MessageBox.Show(FriendlyBookErrorMessage(ex), "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Try
+    End Sub
+
+    ''' <summary>
+    ''' Adds a "Price (PHP)" row to the details panel (under Available) and moves the
+    ''' buttons down to make room. Created in code so the Designer file stays untouched.
+    ''' </summary>
+    Private Sub BuildPriceField()
+        Dim caption As New Label()
+        caption.AutoSize = True
+        caption.Text = "Price (PHP):"
+        caption.Font = lblAvailableCaption.Font
+        caption.ForeColor = lblAvailableCaption.ForeColor
+        caption.Location = New Point(15, 366)
+        grpDetails.Controls.Add(caption)
+
+        numPrice.DecimalPlaces = 2
+        numPrice.Minimum = 0
+        numPrice.Maximum = 1000000
+        numPrice.Increment = 10
+        numPrice.ThousandsSeparator = True
+        numPrice.Location = New Point(115, 363)
+        numPrice.Size = New Size(120, 23)
+        grpDetails.Controls.Add(numPrice)
+
+        For Each b As Control In New Control() {btnAdd, btnUpdate, btnDelete, btnClear}
+            b.Top += 30
+        Next
+        grpDetails.Height += 30
     End Sub
 
     ''' <summary>

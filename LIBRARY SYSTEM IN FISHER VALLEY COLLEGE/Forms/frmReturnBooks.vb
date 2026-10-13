@@ -20,6 +20,7 @@ Public Class frmReturnBooks
                 "Database Not Connected", MessageBoxButtons.OK, MessageBoxIcon.Warning)
         End If
 
+        BuildPenaltyControls()
         LoadBorrowedBooks()
     End Sub
 
@@ -135,7 +136,8 @@ Public Class frmReturnBooks
                         WHEN DATEDIFF(CURDATE(), t.due_date) > 0 
                         THEN DATEDIFF(CURDATE(), t.due_date) * @finePerDay
                         ELSE 0 
-                    END AS `Fine (PHP)`
+                    END AS `Fine (PHP)`,
+                    COALESCE(b.price, 0) AS `Price (PHP)`
                 FROM tbl_transactions t
                 INNER JOIN tbl_books b ON t.book_id = b.book_id
                 INNER JOIN tbl_members m ON t.member_id = m.member_id
@@ -282,13 +284,43 @@ End Sub
             Return
         End Try
 
-        ' Confirm the return
-        Dim message As String = $"Return ""{bookTitle}"" borrowed by {borrowerName}?" & Environment.NewLine
-        If daysOverdue > 0 Then
-            message &= $"OVERDUE by {daysOverdue} day(s)" & Environment.NewLine &
-                      $"Fine: PHP {fineAmount:N2}" & Environment.NewLine & Environment.NewLine
+        ' --- Condition / penalty chosen in the Transaction Details panel ---
+        Dim condIdx As Integer = cmbCondition.SelectedIndex
+        Dim condition As String = If(condIdx = 2, "Lost", If(condIdx = 1, "Damaged", "Good"))
+        Dim bookPrice As Decimal = SelectedValueDecimal("Price (PHP)")
+        Dim penaltyPct As Decimal = If(condIdx = 0, 0D, numPenaltyPct.Value)
+        Dim penaltyAmount As Decimal = If(condIdx = 0, 0D, Math.Round(bookPrice * penaltyPct / 100D, 2))
+        Dim totalCharge As Decimal = fineAmount + penaltyAmount
+        Dim remarks As String = txtRemarks.Text.Trim()
+
+        If condIdx > 0 AndAlso bookPrice <= 0D Then
+            Dim noPrice As DialogResult = MessageBox.Show(
+                "This book has no price on file, so the penalty will be PHP 0.00." & Environment.NewLine & Environment.NewLine &
+                "Set its price in Books first, or continue without a penalty?",
+                "No Book Price", MessageBoxButtons.YesNo, MessageBoxIcon.Warning)
+            If noPrice = DialogResult.No Then Return
         End If
-        message &= "Mark this book as returned?"
+
+        ' Confirm the return
+        Dim message As String
+        If condIdx = 2 Then
+            message = $"Record ""{bookTitle}"" borrowed by {borrowerName} as LOST (not returned)?" & Environment.NewLine
+        ElseIf condIdx = 1 Then
+            message = $"Return ""{bookTitle}"" borrowed by {borrowerName} as DAMAGED / TORN?" & Environment.NewLine
+        Else
+            message = $"Return ""{bookTitle}"" borrowed by {borrowerName}?" & Environment.NewLine
+        End If
+
+        If daysOverdue > 0 Then
+            message &= $"OVERDUE by {daysOverdue} day(s) - late fine: PHP {fineAmount:N2}" & Environment.NewLine
+        End If
+        If penaltyAmount > 0D Then
+            message &= $"Penalty ({penaltyPct:0.##}% of PHP {bookPrice:N2}): PHP {penaltyAmount:N2}" & Environment.NewLine
+        End If
+        If totalCharge > 0D Then
+            message &= $"TOTAL TO PAY: PHP {totalCharge:N2}" & Environment.NewLine
+        End If
+        message &= Environment.NewLine & "Continue?"
 
         Dim result As DialogResult = MessageBox.Show(message, "Confirm Return",
                                                     MessageBoxButtons.YesNo, MessageBoxIcon.Question)
@@ -298,22 +330,34 @@ End Sub
         End If
 
         Try
+            DBConnection.EnsureSchema()
+
             ' Update the transaction record
-            Dim updateSql As String = "
-                UPDATE tbl_transactions 
-                SET 
-                    date_returned = @dateReturned,
-                    status = CASE 
-                                WHEN @dateReturned > due_date THEN 'Overdue' 
-                                ELSE 'Returned' 
-                             END,
-                    fine_amount = @fineAmount,
-                    fine_paid = 0
-                WHERE transaction_id = @transactionId"
+            Dim updateSql As String =
+                "UPDATE tbl_transactions SET " &
+                "date_returned = @dateReturned, " &
+                "returned_at = @returnedAt, " &
+                "status = CASE WHEN @dateReturned > due_date THEN 'Overdue' ELSE 'Returned' END, " &
+                "fine_amount = @fineAmount, " &
+                "fine_paid = 0, " &
+                "return_condition = @cond, " &
+                "penalty_percent = @pct, " &
+                "penalty_amount = @penalty, " &
+                "remarks = @remarks, " &
+                "processed_by = @by " &
+                "WHERE transaction_id = @transactionId"
+
+            Dim processedBy As String = If(String.IsNullOrWhiteSpace(AuthHelper.CurrentFullName), AuthHelper.CurrentUsername, AuthHelper.CurrentFullName)
 
             Dim updateParams As New Dictionary(Of String, Object) From {
                 {"@dateReturned", DateTime.Today},
+                {"@returnedAt", DateTime.Now},
                 {"@fineAmount", fineAmount},
+                {"@cond", condition},
+                {"@pct", penaltyPct},
+                {"@penalty", penaltyAmount},
+                {"@remarks", If(remarks.Length = 0, CObj(DBNull.Value), CObj(remarks))},
+                {"@by", If(String.IsNullOrWhiteSpace(processedBy), CObj(DBNull.Value), CObj(processedBy))},
                 {"@transactionId", transactionId}
             }
 
@@ -324,13 +368,18 @@ End Sub
                 Return
             End If
 
-            ' Update the book's available copies
-            Dim bookUpdateSql As String = "
-                UPDATE tbl_books 
-                SET copies_available = copies_available + 1 
-                WHERE book_id = (
-                    SELECT book_id FROM tbl_transactions WHERE transaction_id = @transactionId
-                )"
+            ' Update the book's stock: a returned (or damaged) copy goes back on the shelf;
+            ' a lost copy is gone for good, so the total number of copies drops by one.
+            Dim bookUpdateSql As String
+            If condIdx = 2 Then
+                bookUpdateSql =
+                    "UPDATE tbl_books SET copies_total = GREATEST(copies_total - 1, 0) " &
+                    "WHERE book_id = (SELECT book_id FROM tbl_transactions WHERE transaction_id = @transactionId)"
+            Else
+                bookUpdateSql =
+                    "UPDATE tbl_books SET copies_available = copies_available + 1 " &
+                    "WHERE book_id = (SELECT book_id FROM tbl_transactions WHERE transaction_id = @transactionId)"
+            End If
 
             Dim bookUpdateParams As New Dictionary(Of String, Object) From {
                 {"@transactionId", transactionId}
@@ -338,21 +387,175 @@ End Sub
 
             DBConnection.ExecuteNonQuery(bookUpdateSql, bookUpdateParams)
 
-            Dim successMessage As String = $"Successfully returned ""{bookTitle}"" by {borrowerName}."
-            If daysOverdue > 0 Then
-                successMessage &= Environment.NewLine & $"Fine of PHP {fineAmount:N2} has been recorded."
+            ' Permanent history (own table) + activity log for the admin
+            DBConnection.RecordBookHistory(transactionId)
+            ActivityLog.Write(If(condIdx = 2, "Book Lost", "Return Book"),
+                              $"""{bookTitle}"" - {borrowerName} - condition: {condition}; late fine PHP {fineAmount:N2}; penalty PHP {penaltyAmount:N2}")
+
+            Dim successMessage As String
+            If condIdx = 2 Then
+                successMessage = $"""{bookTitle}"" by {borrowerName} has been recorded as lost."
+            Else
+                successMessage = $"Successfully returned ""{bookTitle}"" by {borrowerName}."
+            End If
+            If totalCharge > 0D Then
+                successMessage &= Environment.NewLine & $"Charges of PHP {totalCharge:N2} have been recorded."
             End If
 
             MessageBox.Show(successMessage, "Return Successful",
                             MessageBoxButtons.OK, MessageBoxIcon.Information)
 
             ' Refresh the grid (the mini table re-queries live, no refresh needed)
+            txtRemarks.Clear()
+            cmbCondition.SelectedIndex = 0
             LoadBorrowedBooks()
 
         Catch ex As Exception
             MessageBox.Show("Could not process return: " & ex.Message, "Database Error",
                             MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Try
+    End Sub
+
+    ' ------------------------------------------------------------
+    ' Condition / penalty controls (Good, Damaged / Torn, Lost)
+    ' The penalty is a percent of the book's price (Books screen).
+    ' Default percents come from tbl_settings and can be changed per case.
+    ' ------------------------------------------------------------
+    Private cmbCondition As ComboBox
+    Private numPenaltyPct As NumericUpDown
+    Private lblPriceValue As Label
+    Private lblPenaltyValue As Label
+    Private lblTotalValue As Label
+    Private txtRemarks As TextBox
+    Private damagedPctDefault As Decimal = 50D
+    Private lostPctDefault As Decimal = 100D
+
+    Private Sub BuildPenaltyControls()
+        DBConnection.EnsureSchema()
+
+        Dim v As Decimal
+        If Decimal.TryParse(DBConnection.ReadSetting("damaged_penalty_percent", "50"),
+                            Globalization.NumberStyles.Any, Globalization.CultureInfo.InvariantCulture, v) Then
+            damagedPctDefault = Math.Max(0D, Math.Min(100D, v))
+        End If
+        If Decimal.TryParse(DBConnection.ReadSetting("lost_penalty_percent", "100"),
+                            Globalization.NumberStyles.Any, Globalization.CultureInfo.InvariantCulture, v) Then
+            lostPctDefault = Math.Max(0D, Math.Min(100D, v))
+        End If
+
+        lblSubtitle.Text = "Return borrowed books, record damaged or lost books, and calculate fines and penalties"
+
+        AddCaption("Condition:", 98)
+        cmbCondition = New ComboBox()
+        cmbCondition.DropDownStyle = ComboBoxStyle.DropDownList
+        cmbCondition.Location = New Point(115, 95)
+        cmbCondition.Size = New Size(150, 23)
+        cmbCondition.Items.AddRange(New Object() {"Good", "Damaged / Torn", "Lost / Not returned"})
+        cmbCondition.SelectedIndex = 0
+        grpDetails.Controls.Add(cmbCondition)
+
+        AddCaption("Book Price:", 132)
+        lblPriceValue = AddValue(132)
+
+        AddCaption("Penalty %:", 166)
+        numPenaltyPct = New NumericUpDown()
+        numPenaltyPct.Location = New Point(115, 163)
+        numPenaltyPct.Size = New Size(70, 23)
+        numPenaltyPct.DecimalPlaces = 0
+        numPenaltyPct.Minimum = 0
+        numPenaltyPct.Maximum = 100
+        numPenaltyPct.Value = 0
+        numPenaltyPct.Enabled = False
+        grpDetails.Controls.Add(numPenaltyPct)
+
+        AddCaption("Penalty (PHP):", 200)
+        lblPenaltyValue = AddValue(200)
+
+        AddCaption("Total (PHP):", 234)
+        lblTotalValue = AddValue(234)
+        lblTotalValue.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+
+        AddCaption("Remarks:", 268)
+        txtRemarks = New TextBox()
+        txtRemarks.Location = New Point(115, 265)
+        txtRemarks.Size = New Size(150, 23)
+        grpDetails.Controls.Add(txtRemarks)
+        UiStyle.WrapField(txtRemarks)
+
+        btnReturn.Top = 322
+
+        AddHandler cmbCondition.SelectedIndexChanged, AddressOf OnConditionChanged
+        AddHandler numPenaltyPct.ValueChanged, Sub(s, e) RefreshPenaltyPreview()
+
+        RefreshPenaltyPreview()
+    End Sub
+
+    Private Sub AddCaption(text As String, y As Integer)
+        Dim l As New Label()
+        l.AutoSize = True
+        l.Text = text
+        l.Font = lblFineCaption.Font
+        l.ForeColor = lblFineCaption.ForeColor
+        l.Location = New Point(15, y)
+        grpDetails.Controls.Add(l)
+    End Sub
+
+    Private Function AddValue(y As Integer) As Label
+        Dim l As New Label()
+        l.AutoSize = True
+        l.Text = "0.00"
+        l.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
+        l.ForeColor = Color.FromArgb(17, 78, 128)
+        l.Location = New Point(115, y)
+        grpDetails.Controls.Add(l)
+        Return l
+    End Function
+
+    Private Sub OnConditionChanged(sender As Object, e As EventArgs)
+        Select Case cmbCondition.SelectedIndex
+            Case 1
+                numPenaltyPct.Enabled = True
+                numPenaltyPct.Value = damagedPctDefault
+            Case 2
+                numPenaltyPct.Enabled = True
+                numPenaltyPct.Value = lostPctDefault
+            Case Else
+                numPenaltyPct.Value = 0
+                numPenaltyPct.Enabled = False
+        End Select
+        RefreshPenaltyPreview()
+    End Sub
+
+    Private Sub RefreshPenaltyPreview()
+        If cmbCondition Is Nothing OrElse lblTotalValue Is Nothing Then Return
+
+        Dim price As Decimal = SelectedValueDecimal("Price (PHP)")
+        Dim fine As Decimal = SelectedValueDecimal("Fine (PHP)")
+        Dim penalty As Decimal = If(cmbCondition.SelectedIndex = 0, 0D, Math.Round(price * numPenaltyPct.Value / 100D, 2))
+
+        lblPriceValue.Text = price.ToString("N2")
+        lblPenaltyValue.Text = penalty.ToString("N2")
+        lblTotalValue.Text = (fine + penalty).ToString("N2")
+        lblTotalValue.ForeColor = If(fine + penalty > 0D, Color.Red, Color.FromArgb(17, 78, 128))
+    End Sub
+
+    Private Function SelectedValueDecimal(columnName As String) As Decimal
+        If dgvBorrowed Is Nothing OrElse dgvBorrowed.SelectedRows.Count = 0 Then Return 0D
+        If Not dgvBorrowed.Columns.Contains(columnName) Then Return 0D
+
+        Dim v As Object = dgvBorrowed.SelectedRows(0).Cells(columnName).Value
+        If v Is Nothing OrElse IsDBNull(v) Then Return 0D
+        Return Convert.ToDecimal(v)
+    End Function
+
+    ' A different row means a fresh decision: start from "Good" again.
+    Private Sub dgvBorrowed_SelectionChanged_Penalty(sender As Object, e As EventArgs) Handles dgvBorrowed.SelectionChanged
+        If cmbCondition Is Nothing Then Return
+        If cmbCondition.SelectedIndex <> 0 Then
+            cmbCondition.SelectedIndex = 0
+        Else
+            RefreshPenaltyPreview()
+        End If
     End Sub
 
     ''' <summary>

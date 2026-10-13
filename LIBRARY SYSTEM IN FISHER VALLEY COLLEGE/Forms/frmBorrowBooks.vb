@@ -382,6 +382,7 @@ Public Class frmBorrowBooks
 
             DBConnection.ExecuteNonQuery(updateSql, updateParams)
 
+            ActivityLog.Write("Borrow Book", $"{quantity} copy(ies) of ""{bookTitle}"" borrowed by {memberName}; due {dtpDueDate.Value.ToShortDateString()}")
             MessageBox.Show($"Successfully borrowed {quantity} copy(ies) of ""{bookTitle}"" to {memberName}.",
                             "Borrow Successful", MessageBoxButtons.OK, MessageBoxIcon.Information)
 

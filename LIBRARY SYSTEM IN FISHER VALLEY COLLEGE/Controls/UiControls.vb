@@ -6,6 +6,8 @@
 '                    (Log In ->, Create Account, Cancel ...)
 '   RoundedField   - rounded text field with real inner padding
 '                    and an optional icon (user / lock / search)
+'   RoundedComboField - same rounded look around a dropdown list
+'                    (Course / Department on Create Account)
 '   SidebarButton  - icon-on-top nav item for the left sidebar
 '   UiTheme        - colours + helpers (WrapTextBox etc.)
 '
@@ -83,6 +85,29 @@ Public Module UiTheme
         parent.Controls.SetChildIndex(f, idx)
         f.TabIndex = tab
         f.Attach(tb, icon, hPad, rightReserve)
+        Return f
+    End Function
+
+    ''' <summary>
+    ''' Same idea as WrapTextBox, but for a ComboBox: puts it inside a new
+    ''' RoundedComboField at fieldBounds (rounded border, icon, chevron),
+    ''' keeping its name, events, tab order and z-order.
+    ''' </summary>
+    Public Function WrapComboBox(cb As ComboBox, icon As Image, fieldBounds As Rectangle,
+                                 hPad As Integer) As RoundedComboField
+        Dim parent As Control = cb.Parent
+        Dim idx As Integer = parent.Controls.GetChildIndex(cb)
+        Dim tab As Integer = cb.TabIndex
+
+        Dim f As New RoundedComboField()
+        f.SetBounds(fieldBounds.X, fieldBounds.Y, fieldBounds.Width, fieldBounds.Height)
+        f.Anchor = cb.Anchor
+        f.TabStop = False
+
+        parent.Controls.Add(f)
+        parent.Controls.SetChildIndex(f, idx)
+        f.TabIndex = tab
+        f.Attach(cb, icon, hPad)
         Return f
     End Function
 
@@ -417,6 +442,179 @@ Public Class RoundedField
         If _icon IsNot Nothing Then
             g.DrawImage(_icon, New Rectangle(_hPad, (Height - IconPx) \ 2, IconPx, IconPx))
         End If
+    End Sub
+
+End Class
+
+' ------------------------------------------------------------
+' RoundedComboField - rounded box holding a dropdown list, so a
+' ComboBox matches the RoundedField text boxes (border, focus
+' colour, icon, padding). The ComboBox's own arrow button is
+' pushed out of view and a chevron is drawn by the field instead.
+' ------------------------------------------------------------
+Public Class RoundedComboField
+    Inherits Panel
+
+    Private Const IconPx As Integer = 18
+    Private Const ChevronZone As Integer = 34    ' room kept on the right for the chevron
+    Private Const HiddenButton As Integer = 26   ' strip of the combo that is clipped away (its own arrow)
+
+    Private _combo As ComboBox
+    Private _clip As Panel
+    Private _icon As Image
+    Private _hPad As Integer = 12
+    Private _focused As Boolean
+    Private _placeholder As String = ""
+
+    Public Sub New()
+        SetStyle(ControlStyles.AllPaintingInWmPaint Or ControlStyles.UserPaint Or
+                 ControlStyles.OptimizedDoubleBuffer Or ControlStyles.ResizeRedraw, True)
+        BackColor = Color.White
+    End Sub
+
+    Public ReadOnly Property InnerComboBox As ComboBox
+        Get
+            Return _combo
+        End Get
+    End Property
+
+    ''' <summary>Grey hint shown while nothing is selected.</summary>
+    <DefaultValue("")>
+    Public Property PlaceholderText As String
+        Get
+            Return _placeholder
+        End Get
+        Set(value As String)
+            _placeholder = If(value, "")
+            If _combo IsNot Nothing Then _combo.Invalidate()
+        End Set
+    End Property
+
+    ''' <summary>Moves cb inside this field (list-only, custom drawn, no own border).</summary>
+    Public Sub Attach(cb As ComboBox, icon As Image, hPad As Integer)
+        _combo = cb
+        _icon = icon
+        _hPad = hPad
+
+        cb.DropDownStyle = ComboBoxStyle.DropDownList
+        cb.FlatStyle = FlatStyle.Flat
+        cb.BackColor = Color.White
+        cb.ForeColor = Color.FromArgb(40, 48, 56)
+        cb.DrawMode = DrawMode.OwnerDrawFixed
+        cb.ItemHeight = 22
+        cb.Dock = DockStyle.None
+        cb.Anchor = AnchorStyles.Top Or AnchorStyles.Left
+
+        ' The clip panel hides the combo's own arrow button (the part of
+        ' the combo that sticks out past the clip panel's right edge).
+        _clip = New Panel()
+        _clip.BackColor = Color.White
+        Controls.Add(_clip)
+        _clip.Controls.Add(cb)
+        cb.Location = New Point(0, 0)
+
+        AddHandler cb.DrawItem, AddressOf Combo_DrawItem
+        AddHandler cb.Enter, AddressOf InnerFocusChanged
+        AddHandler cb.Leave, AddressOf InnerFocusChanged
+        AddHandler cb.DropDown, AddressOf InnerFocusChanged
+        AddHandler cb.DropDownClosed, AddressOf InnerFocusChanged
+
+        LayoutInner()
+        Invalidate()
+    End Sub
+
+    Private Sub InnerFocusChanged(sender As Object, e As EventArgs)
+        _focused = (_combo IsNot Nothing AndAlso (_combo.Focused OrElse _combo.DroppedDown))
+        Invalidate()
+    End Sub
+
+    Private Sub LayoutInner()
+        If _combo Is Nothing OrElse _clip Is Nothing Then Return
+        Dim left As Integer = _hPad + If(_icon IsNot Nothing, IconPx + 10, 0)
+        Dim clipW As Integer = Math.Max(20, Width - left - ChevronZone)
+        _clip.SetBounds(left, Math.Max(0, (Height - _combo.Height) \ 2), clipW, _combo.Height)
+        _combo.Width = clipW + HiddenButton
+        _combo.DropDownWidth = Math.Max(clipW + HiddenButton, 120)
+    End Sub
+
+    Protected Overrides Sub OnResize(eventargs As EventArgs)
+        MyBase.OnResize(eventargs)
+        LayoutInner()
+    End Sub
+
+    ' Clicking the padding / chevron opens the list.
+    Protected Overrides Sub OnMouseDown(e As MouseEventArgs)
+        MyBase.OnMouseDown(e)
+        If _combo IsNot Nothing Then
+            _combo.Focus()
+            _combo.DroppedDown = Not _combo.DroppedDown
+        End If
+    End Sub
+
+    ' Draws both the closed box (ComboBoxEdit) and every list row, so the
+    ' selected text never turns into the default blue highlight block.
+    Private Sub Combo_DrawItem(sender As Object, e As DrawItemEventArgs)
+        Dim cb As ComboBox = DirectCast(sender, ComboBox)
+        Dim inEdit As Boolean = (e.State And DrawItemState.ComboBoxEdit) = DrawItemState.ComboBoxEdit
+        Dim hot As Boolean = Not inEdit AndAlso (e.State And DrawItemState.Selected) = DrawItemState.Selected
+
+        Using br As New SolidBrush(If(hot, BrandTint, Color.White))
+            e.Graphics.FillRectangle(br, e.Bounds)
+        End Using
+
+        Dim text As String
+        Dim fore As Color
+        If e.Index < 0 Then
+            If Not inEdit OrElse _placeholder.Length = 0 Then Return
+            text = _placeholder
+            fore = Color.FromArgb(140, 150, 160)
+        Else
+            text = cb.GetItemText(cb.Items(e.Index))
+            fore = If(hot, BrandDarker, Color.FromArgb(40, 48, 56))
+        End If
+
+        Dim pad As Integer = If(inEdit, 0, 6)
+        Dim flags As TextFormatFlags = TextFormatFlags.VerticalCenter Or TextFormatFlags.Left Or
+                                       TextFormatFlags.NoPrefix Or TextFormatFlags.SingleLine Or
+                                       TextFormatFlags.NoPadding Or TextFormatFlags.EndEllipsis
+        TextRenderer.DrawText(e.Graphics, text, cb.Font,
+                              New Rectangle(e.Bounds.X + pad, e.Bounds.Y, e.Bounds.Width - pad, e.Bounds.Height),
+                              fore, flags)
+    End Sub
+
+    Protected Overrides Sub OnPaint(e As PaintEventArgs)
+        Dim g As Graphics = e.Graphics
+        g.SmoothingMode = SmoothingMode.AntiAlias
+        g.InterpolationMode = InterpolationMode.HighQualityBicubic
+
+        If Parent IsNot Nothing Then g.Clear(Parent.BackColor)
+
+        Dim body As New Rectangle(1, 1, Width - 3, Height - 3)
+        Using path As GraphicsPath = RoundedPath(body, 9)
+            Using br As New SolidBrush(BackColor)
+                g.FillPath(br, path)
+            End Using
+            Using pen As New Pen(If(_focused, Brand, FieldBorder), If(_focused, 1.6F, 1.0F))
+                g.DrawPath(pen, path)
+            End Using
+        End Using
+
+        If _icon IsNot Nothing Then
+            g.DrawImage(_icon, New Rectangle(_hPad, (Height - IconPx) \ 2, IconPx, IconPx))
+        End If
+
+        ' chevron
+        Dim cx As Single = Width - 20.0F
+        Dim cy As Single = Height / 2.0F
+        Using pen As New Pen(MutedText, 1.8F)
+            pen.StartCap = LineCap.Round
+            pen.EndCap = LineCap.Round
+            pen.LineJoin = LineJoin.Round
+            g.DrawLines(pen, New PointF() {
+                New PointF(cx - 4.5F, cy - 2.0F),
+                New PointF(cx, cy + 2.5F),
+                New PointF(cx + 4.5F, cy - 2.0F)})
+        End Using
     End Sub
 
 End Class

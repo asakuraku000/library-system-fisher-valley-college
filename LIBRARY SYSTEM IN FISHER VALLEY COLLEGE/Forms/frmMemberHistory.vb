@@ -158,6 +158,7 @@ Public Class frmMemberHistory
     ''' <summary>Reads the member's full history from the database, then applies the filter.</summary>
     Private Sub LoadHistory()
         Try
+            DBConnection.EnsureSchema()
             Dim rate As Decimal = GetFinePerDay()
 
             Dim sql As String =
@@ -167,9 +168,9 @@ Public Class frmMemberHistory
                 "       CASE WHEN t.date_returned > t.due_date THEN 'Returned Late' ELSE 'Returned' END " &
                 "     WHEN t.due_date < CURDATE() THEN 'Overdue' " &
                 "     ELSE 'Borrowed' END AS `Status`, " &
-                "CASE WHEN t.date_returned IS NOT NULL THEN t.fine_amount " &
+                "CASE WHEN t.date_returned IS NOT NULL THEN t.fine_amount + COALESCE(t.penalty_amount, 0) " &
                 "     ELSE GREATEST(DATEDIFF(CURDATE(), t.due_date), 0) * @rate END AS `Fine (PHP)`, " &
-                "CASE WHEN t.date_returned IS NOT NULL AND t.fine_amount > 0 " &
+                "CASE WHEN t.date_returned IS NOT NULL AND t.fine_amount + COALESCE(t.penalty_amount, 0) > 0 " &
                 "     THEN IF(t.fine_paid = 1, 'Paid', 'Unpaid') ELSE '-' END AS `Fine Status` " &
                 "FROM tbl_transactions t " &
                 "INNER JOIN tbl_books b ON t.book_id = b.book_id " &
@@ -183,7 +184,7 @@ Public Class frmMemberHistory
                 })
 
             ShowSummary()
-            lblNote.Text = $"Fine: PHP {rate:N2} per overdue day. Fines for returned books are the amounts recorded by the librarian."
+            lblNote.Text = $"Fine: PHP {rate:N2} per overdue day. Charges for returned books (late fine plus any damaged / lost book penalty) are the amounts recorded by the librarian."
             ApplyFilter()
 
         Catch ex As Exception

@@ -199,6 +199,7 @@ Public Class frmBorrower
                     {"@status", If(String.IsNullOrWhiteSpace(cmbMembershipStatus.Text), "Active", cmbMembershipStatus.Text)}
                 })
 
+            ActivityLog.Write("Add Borrower", $"Added borrower {txtFullName.Text.Trim()} (ID {idNumber})")
             MessageBox.Show("Borrower added.", "Success",
                              MessageBoxButtons.OK, MessageBoxIcon.Information)
 
@@ -245,6 +246,7 @@ Public Class frmBorrower
                     {"@mid", selectedMemberId}
                 })
 
+            ActivityLog.Write("Edit Borrower", $"Edited borrower {txtFullName.Text.Trim()} (ID {idNumber})")
             MessageBox.Show("Borrower details updated.", "Success",
                              MessageBoxButtons.OK, MessageBoxIcon.Information)
 
@@ -270,10 +272,14 @@ Public Class frmBorrower
         If confirm <> DialogResult.Yes Then Return
 
         Try
+            Dim deletedName As String = txtFullName.Text.Trim()
+            Dim deletedId As String = txtIdNumber.Text.Trim()
+
             DBConnection.ExecuteNonQuery(
                 "DELETE FROM tbl_members WHERE member_id = @id AND role = 'member'",
                 New Dictionary(Of String, Object) From {{"@id", selectedMemberId}})
 
+            ActivityLog.Write("Delete Borrower", $"Deleted borrower {deletedName} (ID {deletedId})")
             MessageBox.Show("Borrower removed.", "Success",
                              MessageBoxButtons.OK, MessageBoxIcon.Information)
 
