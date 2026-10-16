@@ -585,6 +585,7 @@ Public Class Form1
             AuthHelper.CurrentUsername = dt.Rows(0)("username").ToString()
             AuthHelper.CurrentRole = dt.Rows(0)("role").ToString()
             ActivityLog.Write("Login", $"{AuthHelper.CurrentFullName} logged in as {AuthHelper.CurrentRole}")
+            Presence.StartSession()
 
             If chkRemember.Checked Then
                 SaveRememberedUsername(username)
@@ -611,6 +612,7 @@ Public Class Form1
             ' Logging out (or closing the dashboard some other way) brings
             ' the user back to this frame, not out of the app.
             ActivityLog.Write("Logout", $"{AuthHelper.CurrentFullName} logged out")
+            Presence.EndSession()
             AuthHelper.ClearSession()
             passwordTextBox.Clear()
             If Not chkRemember.Checked Then usernameTextBox.Clear()

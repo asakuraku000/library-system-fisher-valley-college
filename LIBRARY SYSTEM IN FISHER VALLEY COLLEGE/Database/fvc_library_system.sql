@@ -363,7 +363,10 @@ CREATE TABLE `tbl_members` (
   `address` varchar(255) DEFAULT NULL,
   `membership_status` enum('Active','Inactive','Suspended') NOT NULL DEFAULT 'Active',
   `date_registered` date DEFAULT curdate(),
-  `account_type` enum('Student','Teacher') DEFAULT NULL
+  `account_type` enum('Student','Teacher') DEFAULT NULL,
+  `last_login` datetime DEFAULT NULL,
+  `last_active` datetime DEFAULT NULL,
+  `is_online` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --

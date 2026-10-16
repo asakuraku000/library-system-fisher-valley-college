@@ -244,6 +244,12 @@ Public Class frmMemberDashboard
     Private Sub Navigate(target As Button, page As Form)
         SetActive(target)
         ShowInContent(page)
+
+        ' Let the admin see what the member is doing, and keep "Active now" fresh.
+        Presence.Touch()
+        If Not TypeOf page Is frmMemberHome Then
+            ActivityLog.Write("View Page", "Opened " & target.Text.Trim())
+        End If
     End Sub
 
     ''' <summary>

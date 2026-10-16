@@ -37,7 +37,7 @@ Partial Class frmBorrower
         grpDetails = New GroupBox()
         btnViewHistory = New RoundedButton()
         btnClear = New RoundedButton()
-        btnDelete = New RoundedButton()
+        btnReturn = New RoundedButton()
         btnUpdate = New RoundedButton()
         btnAdd = New RoundedButton()
         lblDateRegisteredValue = New Label()
@@ -106,7 +106,7 @@ Partial Class frmBorrower
         '
         grpDetails.Controls.Add(btnViewHistory)
         grpDetails.Controls.Add(btnClear)
-        grpDetails.Controls.Add(btnDelete)
+        grpDetails.Controls.Add(btnReturn)
         grpDetails.Controls.Add(btnUpdate)
         grpDetails.Controls.Add(btnAdd)
         grpDetails.Controls.Add(lblDateRegisteredValue)
@@ -316,19 +316,19 @@ Partial Class frmBorrower
         btnUpdate.Text = "Update"
         btnUpdate.UseVisualStyleBackColor = False
         '
-        ' btnDelete
+        ' btnReturn
         '
-        btnDelete.BackColor = Color.FromArgb(CByte(178), CByte(34), CByte(34))
-        btnDelete.FlatAppearance.BorderSize = 0
-        btnDelete.FlatStyle = FlatStyle.Flat
-        btnDelete.ForeColor = Color.White
-        btnDelete.Location = New Point(15, 376)
-        btnDelete.Name = "btnDelete"
-        btnDelete.Kind = ButtonKind.Custom
-        btnDelete.Size = New Size(120, 32)
-        btnDelete.TabIndex = 20
-        btnDelete.Text = "Delete"
-        btnDelete.UseVisualStyleBackColor = False
+        btnReturn.BackColor = Color.FromArgb(CByte(0), CByte(121), CByte(107))
+        btnReturn.FlatAppearance.BorderSize = 0
+        btnReturn.FlatStyle = FlatStyle.Flat
+        btnReturn.ForeColor = Color.White
+        btnReturn.Location = New Point(15, 376)
+        btnReturn.Name = "btnReturn"
+        btnReturn.Kind = ButtonKind.Custom
+        btnReturn.Size = New Size(120, 32)
+        btnReturn.TabIndex = 20
+        btnReturn.Text = "Return Books"
+        btnReturn.UseVisualStyleBackColor = False
         '
         ' btnClear
         '
@@ -495,7 +495,7 @@ Partial Class frmBorrower
     Friend WithEvents lblDateRegisteredValue As Label
     Friend WithEvents btnAdd As RoundedButton
     Friend WithEvents btnUpdate As RoundedButton
-    Friend WithEvents btnDelete As RoundedButton
+    Friend WithEvents btnReturn As RoundedButton
     Friend WithEvents btnClear As RoundedButton
     Friend WithEvents btnViewHistory As RoundedButton
     Friend WithEvents lblSearch As Label

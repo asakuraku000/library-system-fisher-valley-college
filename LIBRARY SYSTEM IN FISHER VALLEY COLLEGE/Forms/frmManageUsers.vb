@@ -51,7 +51,8 @@ Public Class frmManageUsers
         Try
             Dim sql As String =
                 "SELECT member_id AS `ID`, id_number AS `ID Number`, full_name AS `Full Name`, " &
-                "username AS `Username`, role AS `Role`, date_registered AS `Date Registered` " &
+                "username AS `Username`, role AS `Role`, date_registered AS `Date Registered`, " &
+                Presence.SqlStatusColumns & " " &
                 "FROM tbl_members"
 
             Dim params As New Dictionary(Of String, Object)
@@ -63,7 +64,9 @@ Public Class frmManageUsers
 
             sql &= " ORDER BY role DESC, full_name ASC"
 
+            DBConnection.EnsureSchema()
             Dim dt As DataTable = DBConnection.GetDataTable(sql, params)
+            Presence.AddStatusColumns(dt)
             dgvUsers.DataSource = dt
 
             If dgvUsers.Columns.Contains("ID") Then

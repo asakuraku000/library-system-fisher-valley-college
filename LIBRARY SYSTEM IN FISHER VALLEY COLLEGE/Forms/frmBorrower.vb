@@ -1,7 +1,7 @@
 ' ============================================================
 ' LIBRARY SYSTEM IN FISHER VALLEY COLLEGE
 ' Form: frmBorrower (Logic)
-' Borrower profiles — Add / Update / Delete / Search, backed by
+' Borrower profiles — Add / Update / Return Books / Search, backed by
 ' tbl_members' profile columns (id_number, full_name, course,
 ' year_level, contact_number, email).
 '
@@ -48,7 +48,7 @@ Public Class frmBorrower
                 "SELECT member_id AS `ID`, id_number AS `ID Number`, full_name AS `Full Name`, " &
                 "course AS `Course`, year_level AS `Year Level`, contact_number AS `Contact Number`, " &
                 "email AS `Email`, address AS `Address`, membership_status AS `Membership Status`, " &
-                "date_registered AS `Date Registered` " &
+                "date_registered AS `Date Registered`, " & Presence.SqlStatusColumns & " " &
                 "FROM tbl_members WHERE role = 'member'"
 
             Dim params As New Dictionary(Of String, Object)
@@ -60,7 +60,9 @@ Public Class frmBorrower
 
             sql &= " ORDER BY full_name ASC"
 
+            DBConnection.EnsureSchema()
             Dim dt As DataTable = DBConnection.GetDataTable(sql, params)
+            Presence.AddStatusColumns(dt)
             dgvBorrowers.DataSource = dt
 
             If dgvBorrowers.Columns.Contains("ID") Then
@@ -133,13 +135,13 @@ Public Class frmBorrower
     End Sub
 
     ''' <summary>
-    ''' Add is only for brand-new entries; Update/Delete need an existing row selected.
+    ''' Add is only for brand-new entries; Update/Return Books need an existing row selected.
     ''' </summary>
     Private Sub UpdateFormButtonsState()
         Dim hasSelection As Boolean = selectedMemberId > 0
         btnAdd.Enabled = Not hasSelection
         btnUpdate.Enabled = hasSelection
-        btnDelete.Enabled = hasSelection
+        btnReturn.Enabled = hasSelection
     End Sub
 
     ''' <summary>
@@ -258,37 +260,21 @@ Public Class frmBorrower
         End Try
     End Sub
 
-    Private Sub btnDelete_Click(sender As Object, e As EventArgs) Handles btnDelete.Click
+    ''' <summary>
+    ''' Replaces the old Delete button: opens the Return Books dialog for the selected
+    ''' borrower, where each borrowed book can be returned (Good / Damaged / Lost) and
+    ''' is saved to the Book History with the date it was returned.
+    ''' </summary>
+    Private Sub btnReturn_Click(sender As Object, e As EventArgs) Handles btnReturn.Click
         If selectedMemberId = 0 Then
             MessageBox.Show("Please select a borrower from the list first.", "No Selection",
                              MessageBoxButtons.OK, MessageBoxIcon.Information)
             Return
         End If
 
-        Dim confirm As DialogResult = MessageBox.Show(
-            $"Delete '{txtFullName.Text.Trim()}' from the borrower list? This can't be undone.",
-            "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning)
-
-        If confirm <> DialogResult.Yes Then Return
-
-        Try
-            Dim deletedName As String = txtFullName.Text.Trim()
-            Dim deletedId As String = txtIdNumber.Text.Trim()
-
-            DBConnection.ExecuteNonQuery(
-                "DELETE FROM tbl_members WHERE member_id = @id AND role = 'member'",
-                New Dictionary(Of String, Object) From {{"@id", selectedMemberId}})
-
-            ActivityLog.Write("Delete Borrower", $"Deleted borrower {deletedName} (ID {deletedId})")
-            MessageBox.Show("Borrower removed.", "Success",
-                             MessageBoxButtons.OK, MessageBoxIcon.Information)
-
-            LoadBorrowers(txtSearch.Text.Trim())
-            ClearForm()
-
-        Catch ex As Exception
-            MessageBox.Show(FriendlyBorrowerErrorMessage(ex), "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
-        End Try
+        Using dlg As New frmBorrowerReturn(selectedMemberId, txtFullName.Text.Trim())
+            dlg.ShowDialog(Me)
+        End Using
     End Sub
 
     ''' <summary>

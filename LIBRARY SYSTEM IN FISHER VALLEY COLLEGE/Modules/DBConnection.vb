@@ -46,7 +46,10 @@ Module DBConnection
         Dim needed As New Dictionary(Of String, String) From {
             {"account_type", "ENUM('Student', 'Teacher') NULL"},
             {"address", "VARCHAR(255) NULL"},
-            {"membership_status", "ENUM('Active', 'Inactive', 'Suspended') NOT NULL DEFAULT 'Active'"}
+            {"membership_status", "ENUM('Active', 'Inactive', 'Suspended') NOT NULL DEFAULT 'Active'"},
+            {"last_login", "DATETIME NULL"},
+            {"last_active", "DATETIME NULL"},
+            {"is_online", "TINYINT(1) NOT NULL DEFAULT 0"}
         }
 
         Using conn As MySqlConnection = GetConnection()

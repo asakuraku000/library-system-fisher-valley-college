@@ -27,6 +27,9 @@ Public Class frmActivityLog
     Private ReadOnly btnRefresh As New RoundedButton()
     Private ReadOnly chkAuto As New CheckBox()
     Private ReadOnly dgvLog As New DataGridView()
+    Private ReadOnly pnlPresence As New Panel()
+    Private ReadOnly lblPresence As New Label()
+    Private ReadOnly dgvPresence As New DataGridView()
     Private ReadOnly lblSummary As New Label()
     Private ReadOnly tmrRefresh As New System.Windows.Forms.Timer()
 
@@ -40,7 +43,7 @@ Public Class frmActivityLog
 
         Me.Text = "Fisher Valley College Library - Activity Log"
         Me.Font = New Font("Segoe UI", 9.0F)
-        Me.ClientSize = New Size(960, 530)
+        Me.ClientSize = New Size(960, 690)
 
         ' ---- header (same look as the other admin screens) ----
         pnlHeader.BackColor = Color.FromArgb(17, 78, 128)
@@ -96,7 +99,7 @@ Public Class frmActivityLog
             "Add Book", "Edit Book", "Delete Book",
             "Add Borrower", "Edit Borrower", "Delete Borrower",
             "Add User", "Edit User", "Delete User",
-            "Update Profile", "Change Password"
+            "Update Profile", "Change Password", "View Page"
         })
         cmbAction.SelectedIndex = 0
 
@@ -149,15 +152,43 @@ Public Class frmActivityLog
         dgvLog.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
         dgvLog.BackgroundColor = Color.White
 
+        ' ---- who is online / last active (like Messenger's "Active 1 min ago") ----
+        lblPresence.Dock = DockStyle.Top
+        lblPresence.Height = 26
+        lblPresence.TextAlign = ContentAlignment.MiddleLeft
+        lblPresence.Padding = New Padding(20, 0, 0, 0)
+        lblPresence.Font = New Font("Segoe UI", 9.5F, FontStyle.Bold)
+        lblPresence.ForeColor = Color.FromArgb(17, 78, 128)
+        lblPresence.Text = "User Status - who is online and when each user was last active"
+
+        dgvPresence.Dock = DockStyle.Fill
+        dgvPresence.AllowUserToAddRows = False
+        dgvPresence.AllowUserToDeleteRows = False
+        dgvPresence.ReadOnly = True
+        dgvPresence.MultiSelect = False
+        dgvPresence.SelectionMode = DataGridViewSelectionMode.FullRowSelect
+        dgvPresence.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+        dgvPresence.BackgroundColor = Color.White
+        dgvPresence.RowHeadersVisible = False
+
+        pnlPresence.Dock = DockStyle.Top
+        pnlPresence.Height = 190
+        pnlPresence.Controls.Add(dgvPresence)
+        pnlPresence.Controls.Add(lblPresence)
+
         ' Fill control first, then bottom, then the top bars (docking order)
         Me.Controls.Add(dgvLog)
         Me.Controls.Add(lblSummary)
+        Me.Controls.Add(pnlPresence)
         Me.Controls.Add(pnlFilters)
         Me.Controls.Add(pnlHeader)
 
         tmrRefresh.Interval = 10000
 
-        AddHandler btnRefresh.Click, Sub(s, e) LoadLog()
+        AddHandler btnRefresh.Click, Sub(s, e)
+                                         LoadPresence()
+                                         LoadLog()
+                                     End Sub
         AddHandler txtSearch.TextChanged, Sub(s, e) LoadLog()
         AddHandler cmbRole.SelectedIndexChanged, Sub(s, e) LoadLog()
         AddHandler cmbAction.SelectedIndexChanged, Sub(s, e) LoadLog()
@@ -170,14 +201,47 @@ Public Class frmActivityLog
 
     Private Sub frmActivityLog_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         DBConnection.EnsureSchema()
+        LoadPresence()
         LoadLog()
         tmrRefresh.Enabled = chkAuto.Checked
     End Sub
 
     Private Sub OnAutoRefresh(sender As Object, e As EventArgs)
+        LoadPresence()
+
         ' Don't yank the list away while the admin is scrolled down reading older entries.
         If dgvLog.FirstDisplayedScrollingRowIndex > 0 Then Return
         LoadLog()
+    End Sub
+
+    ''' <summary>
+    ''' Fills the User Status table: every account that can log in, with
+    ''' "Active now" / "Active 1 min ago" / "Active 3 hrs ago" and the last login time.
+    ''' </summary>
+    Private Sub LoadPresence()
+        Try
+            Dim sql As String =
+                "SELECT full_name AS `User`, username AS `Username`, role AS `Role`, " &
+                Presence.SqlStatusColumns & " " &
+                "FROM tbl_members WHERE username IS NOT NULL AND username <> '' " &
+                "ORDER BY (last_active IS NULL), last_active DESC, full_name ASC"
+
+            Dim dt As DataTable = DBConnection.GetDataTable(sql)
+            Presence.AddStatusColumns(dt)
+            dgvPresence.DataSource = dt
+
+            For Each row As DataGridViewRow In dgvPresence.Rows
+                Dim status As String = Convert.ToString(row.Cells("Last Active").Value)
+                If status = "Active now" Then
+                    row.Cells("Last Active").Style.ForeColor = Color.FromArgb(46, 125, 50)
+                    row.Cells("Last Active").Style.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
+                End If
+            Next
+
+            lblPresence.Text = "User Status - who is online and when each user was last active"
+        Catch ex As Exception
+            lblPresence.Text = "User Status - could not load: " & ex.Message
+        End Try
     End Sub
 
     Private Sub LoadLog()
